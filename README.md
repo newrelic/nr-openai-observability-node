@@ -1,33 +1,83 @@
 <a href="https://opensource.newrelic.com/oss-category/#community-project"><picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/dark/Community_Project.png"><source media="(prefers-color-scheme: light)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Project.png"><img alt="New Relic Open Source community project banner." src="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Project.png"></picture></a>
 
-# [Name of Project] [build badges go here when available]
-
->[Brief description - what is the project and value does it provide? How often should users expect to get releases? How is versioning set up? Where does this project want to go?]
+# New Relic OpenAI Observability for Node.js
 
 ## Installation
 
-> [Include a step-by-step procedure on how to get your code installed. Be sure to include any third-party dependencies that need to be installed separately]
+Use your favorite package manager to install `nr-openai-observability-node`.
+
+    $ npm install nr-openai-observability-node
 
 ## Getting Started
->[Simple steps to start working with the software similar to a "Hello World"]
 
-## Usage
->[**Optional** - Include more thorough instructions on how to use the software. This section might not be needed if the Getting Started section is enough. Remove this section if it's not needed.]
+```typescript
+import { Configuration, OpenAIApi } from 'openai';
+import { initializeOpenAI } from 'nr-openai-observability-node';
 
+const configuration = new Configuration({
+  apiKey: 'YOUR_OPEN_AI_API_KEY',
+});
 
-## Building
+const openAIApi = new OpenAIApi(configuration);
 
->[**Optional** - Include this section if users will need to follow specific instructions to build the software from source. Be sure to include any third party build dependencies that need to be installed separately. Remove this section if it's not needed.]
+initializeOpenAI(openAIApi, {
+  apiKey: 'YOUR_NEW_RELIC_AI_API_KEY', // optional
+});
+```
+
+### Initialization Options
+
+```typescript
+export interface EventClientOptions {
+  /**
+   * API key with insert access used to authenticate the request.
+   * For more information on creating keys, please see:
+   * https://docs.newrelic.com/docs/insights/insights-data-sources/custom-data/introduction-event-api#register
+   */
+  apiKey?: string;
+  /**
+   * Optional host override for event endpoint.
+   */
+  host?: string;
+  /**
+   * Optional port override for trace endpoint.
+   */
+  port?: number;
+}
+```
+
+### Environment Variables
+
+You can use your configured environment variable for initialization options:
+
+- NEW_RELIC_API_KEY - API key with insert access used to authenticate the request.
+
+- NEW_RELIC_LICENSE_KEY - Same as API key.
+
+- NEW_RELIC_INSERT_KEY - Same as API key.
+
+- EVENT_CLIENT_HOST - Optional host override for event endpoint.
 
 ## Testing
 
->[**Optional** - Include instructions on how to run tests if we include tests with the codebase. Remove this section if it's not needed.]
+    $ npm run test
 
 ## Support
 
 New Relic hosts and moderates an online forum where you can interact with New Relic employees as well as other customers to get help and share best practices. Like all official New Relic open source projects, there's a related Community topic in the New Relic Explorers Hub. You can find this project's topic/threads here:
 
->Add the url for the support thread here: discuss.newrelic.com
+- [New Relic Documentation](https://docs.newrelic.com/docs/telemetry-data-platform/get-started/capabilities/telemetry-sdks-send-custom-telemetry-data-new-relic): Comprehensive guidance for using our platform
+- [New Relic Community](https://discuss.newrelic.com/tags/nodeagent): The best place to engage in troubleshooting questions
+- [New Relic Developer](https://developer.newrelic.com/): Resources for building a custom observability applications
+- [New Relic University](https://learn.newrelic.com/): A range of online training for New Relic users of every level
+
+## Privacy
+
+At New Relic we take your privacy and the security of your information seriously, and are committed to protecting your information. We must emphasize the importance of not sharing personal data in public forums, and ask all users to scrub logs and diagnostic information for sensitive information, whether personal, proprietary, or otherwise.
+
+We define “Personal Data” as any information relating to an identified or identifiable individual, including, for example, your name, phone number, post code or zip code, Device ID, IP address, and email address.
+
+For more information, review [New Relic’s General Data Privacy Notice](https://newrelic.com/termsandconditions/privacy).
 
 ## Contribute
 
@@ -43,8 +93,10 @@ If you believe you have found a security vulnerability in this project or any of
 
 If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
 
-To all contributors, we thank you!  Without your contribution, this project would not be what it is today.  We also host a community project page dedicated to [Project Name](<LINK TO https://opensource.newrelic.com/projects/... PAGE>).
+To [all contributors](<https://github.com/newrelic/newrelic-telemetry-sdk-node/graphs/contributors), we thank you! Without your contribution, this project would not be what it is today. We also host a community project page dedicated to [New Relic Telemetry SDK (Node)](https://opensource.newrelic.com/projects/newrelic/newrelic-telemetry-sdk-node).
 
 ## License
-[Project Name] is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
->[If applicable: The [project name] also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.]
+
+`newrelic-telemetry-sdk-node` is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
+
+> [If applicable: The [project name] also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.]
