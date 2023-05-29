@@ -46,17 +46,19 @@ describe('Monitor', () => {
       model,
     });
 
-    expect(eventClient.send).toHaveBeenCalledWith([
-      {
-        eventType: 'OpenAICompletion',
-        attributes: {
-          model,
-          prompt: question,
-          response_time: expect.any(Number),
-          'choices.0.text': choices[0].text,
+    expect(eventClient.send).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        {
+          eventType: 'LlmCompletion',
+          attributes: {
+            model,
+            prompt: question,
+            response_time: expect.any(Number),
+            'choices.0.text': choices[0].text,
+          },
         },
-      },
-    ]);
+      ]),
+    );
   });
 
   describe('when monitoring createChatCompletion', () => {
@@ -83,7 +85,7 @@ describe('Monitor', () => {
       jest.spyOn(openai, 'createChatCompletion').mockImplementation(
         createDelayedResponse({
           data: { choices, usage, object, array },
-        })
+        }),
       );
 
       const monitor = creteMonitor(openai, eventClient);
@@ -106,7 +108,7 @@ describe('Monitor', () => {
       expect(eventClient.send).toHaveBeenCalledWith(
         expect.arrayContaining([
           {
-            eventType: 'ChatCompletionMessage',
+            eventType: 'LlmChatCompletionMessage',
             attributes: {
               model,
               sequence: 0,
@@ -114,11 +116,11 @@ describe('Monitor', () => {
               content: question,
               id: expect.any(String),
               role: ChatCompletionRequestMessageRoleEnum.User,
-              vendor: 'openai',
+              vendor: 'openAI',
             },
           },
           {
-            eventType: 'ChatCompletionMessage',
+            eventType: 'LlmChatCompletionMessage',
             attributes: {
               model,
               sequence: 1,
@@ -126,10 +128,10 @@ describe('Monitor', () => {
               content: choices[0].message.content,
               id: expect.any(String),
               role: choices[0].message.role,
-              vendor: 'openai',
+              vendor: 'openAI',
             },
           },
-        ])
+        ]),
       );
     });
 
@@ -137,12 +139,12 @@ describe('Monitor', () => {
       expect(eventClient.send).toHaveBeenCalledWith(
         expect.arrayContaining([
           {
-            eventType: 'ChatCompletionSummary',
-            attributes: {
+            eventType: 'LlmChatCompletionSummary',
+            attributes: expect.objectContaining({
               model,
               id: expect.any(String),
               timestamp: expect.any(Number),
-              vendor: 'openai',
+              vendor: 'openAI',
               finish_reason: choices[0].finish_reason,
               response_time: expect.any(Number),
               number_of_messages: 2,
@@ -151,9 +153,9 @@ describe('Monitor', () => {
               usage_completion_tokens: usage?.completion_tokens,
               'array.0.key': array[0].key,
               'object.key': object.key,
-            },
+            }),
           },
-        ])
+        ]),
       );
     });
   });

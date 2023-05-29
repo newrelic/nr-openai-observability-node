@@ -19,12 +19,12 @@ const openAIApi = TestEnvironment.isAzure
           apiKey: TestEnvironment.openaiApiKey,
           endpoint: TestEnvironment.openaiBasePath,
         },
-      })
+      }),
     ) as unknown as OpenAIApi)
   : new OpenAIApi(
       new Configuration({
         apiKey: TestEnvironment.openaiApiKey,
-      })
+      }),
     );
 
 initializeOpenAI(openAIApi, {

@@ -6,34 +6,34 @@ import { createCompletionEventDataFactory } from './completionEventDataFactory';
 
 export const creteMonitor = (
   openAIApi: OpenAIApi,
-  eventClient: OpenAIEventClient
+  eventClient: OpenAIEventClient,
 ) => {
   const chatCompletionEventDataFactory = createChatCompletionEventDataFactory();
   const completionEventDataFactory = createCompletionEventDataFactory();
 
   const start = () => {
     openAIApi.createCompletion = patchCompletion(
-      openAIApi.createCompletion.bind(openAIApi)
+      openAIApi.createCompletion.bind(openAIApi),
     );
     openAIApi.createChatCompletion = patchChatCompletion(
-      openAIApi.createChatCompletion.bind(openAIApi)
+      openAIApi.createChatCompletion.bind(openAIApi),
     );
   };
 
   const patchCompletion = (
-    createCompletion: OpenAIApi['createCompletion']
+    createCompletion: OpenAIApi['createCompletion'],
   ): OpenAIApi['createCompletion'] => {
     return async (...args: Parameters<OpenAIApi['createCompletion']>) => {
       const { getDuration } = startTimer();
       const response = await createCompletion(...args);
 
       try {
-        const eventData = completionEventDataFactory.createEventData(
-          args[0],
-          response.data,
-          getDuration()
-        );
-        eventClient.send([eventData]);
+        const eventDataList = completionEventDataFactory.createEventData({
+          request: args[0],
+          responseData: response.data,
+          responseTime: getDuration(),
+        });
+        eventClient.send(eventDataList);
       } catch (error: any) {
         console.error(error);
       }
@@ -43,29 +43,34 @@ export const creteMonitor = (
   };
 
   const patchChatCompletion = (
-    createChatCompletion: OpenAIApi['createChatCompletion']
+    createChatCompletion: OpenAIApi['createChatCompletion'],
   ): OpenAIApi['createChatCompletion'] => {
     return async (...args: Parameters<OpenAIApi['createChatCompletion']>) => {
       const { getDuration } = startTimer();
       const response = await createChatCompletion(...args);
 
       try {
-        const duration = getDuration();
+        const responseTime = getDuration();
 
-        const oldSchemaEventData = completionEventDataFactory.createEventData(
-          args[0],
-          response.data,
-          duration
-        );
+        const completionEventDataList =
+          completionEventDataFactory.createEventData({
+            request: args[0],
+            responseData: response.data,
+            responseTime,
+          });
 
-        const headers = args[1]?.headers ?? {};
-        const newSchemaEventDataList =
-          chatCompletionEventDataFactory.createEventDataList(
-            args[0],
-            response.data,
-            duration
-          );
-        eventClient.send([...newSchemaEventDataList, oldSchemaEventData]);
+        const chatCompletionEventDataList =
+          chatCompletionEventDataFactory.createEventDataList({
+            request: args[0],
+            responseData: response.data,
+            responseTime,
+            headers: args[1]?.headers,
+            openAiConfiguration: openAIApi['configuration'],
+          });
+        eventClient.send([
+          ...chatCompletionEventDataList,
+          ...completionEventDataList,
+        ]);
       } catch (error: any) {
         console.error(error);
       }

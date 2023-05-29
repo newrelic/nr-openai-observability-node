@@ -25,7 +25,7 @@ export interface OpenAIEventClient {
 }
 
 export const createEventClient = (
-  options: EventClientOptions = {}
+  options: EventClientOptions = {},
 ): OpenAIEventClient => {
   const apiKey =
     options.apiKey ??
