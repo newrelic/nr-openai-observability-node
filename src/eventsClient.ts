@@ -9,7 +9,7 @@ export interface EventClientOptions {
    * For more information on creating keys, please see:
    * https://docs.newrelic.com/docs/insights/insights-data-sources/custom-data/introduction-event-api#register
    */
-  apiKey?: string;
+  newRelicApiKey?: string;
   /**
    * Optional host override for event endpoint.
    */
@@ -28,7 +28,7 @@ export const createEventClient = (
   options: EventClientOptions = {},
 ): OpenAIEventClient => {
   const apiKey =
-    options.apiKey ??
+    options.newRelicApiKey ??
     Environment.apiKey ??
     Environment.licenseKey ??
     Environment.insertKey;

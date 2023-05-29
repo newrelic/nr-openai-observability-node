@@ -9,7 +9,7 @@ import {
   OpenAIApi,
 } from 'openai';
 
-import { initializeOpenAI } from '../src';
+import { monitorOpenAI } from '../src';
 import { TestEnvironment } from './testEnvironment';
 
 const openAIApi = TestEnvironment.isAzure
@@ -27,8 +27,8 @@ const openAIApi = TestEnvironment.isAzure
       }),
     );
 
-initializeOpenAI(openAIApi, {
-  apiKey: TestEnvironment.nrApiKey,
+monitorOpenAI(openAIApi, {
+  newRelicApiKey: TestEnvironment.nrApiKey,
   host: TestEnvironment.nrHost,
 });
 

@@ -5,3 +5,4 @@ dist
 .env
 .env.azure
 .vscode
+.DS_Store

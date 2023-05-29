@@ -93,7 +93,7 @@ export const createChatCompletionEventDataFactory = () => {
       organization: openAiConfiguration?.organization,
       api_version: openAiConfiguration?.baseOptions?.apiVersion,
       api_key_last_four_digits: isString(openAiConfiguration?.apiKey)
-        ? openAiConfiguration?.apiKey.slice(-4)
+        ? `sk-${openAiConfiguration?.apiKey.slice(-4)}`
         : undefined,
     };
 
