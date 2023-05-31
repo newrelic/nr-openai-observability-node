@@ -1,24 +1,16 @@
 import { OpenAIApi } from 'openai';
 
-import { OpenAIEventClient } from './eventsClient';
+import { createEventClient, EventClientOptions } from './eventsClient';
 import { createChatCompletionEventDataFactory } from './chatCompletionEventDataFactory';
 import { createCompletionEventDataFactory } from './completionEventDataFactory';
 
-export const creteMonitor = (
+export const monitorOpenAI = (
   openAIApi: OpenAIApi,
-  eventClient: OpenAIEventClient,
+  eventClientOptions?: EventClientOptions,
 ) => {
+  const eventClient = createEventClient(eventClientOptions);
   const chatCompletionEventDataFactory = createChatCompletionEventDataFactory();
   const completionEventDataFactory = createCompletionEventDataFactory();
-
-  const start = () => {
-    openAIApi.createCompletion = patchCompletion(
-      openAIApi.createCompletion.bind(openAIApi),
-    );
-    openAIApi.createChatCompletion = patchChatCompletion(
-      openAIApi.createChatCompletion.bind(openAIApi),
-    );
-  };
 
   const patchCompletion = (
     createCompletion: OpenAIApi['createCompletion'],
@@ -87,7 +79,10 @@ export const creteMonitor = (
     };
   };
 
-  return {
-    start,
-  };
+  openAIApi.createCompletion = patchCompletion(
+    openAIApi.createCompletion.bind(openAIApi),
+  );
+  openAIApi.createChatCompletion = patchChatCompletion(
+    openAIApi.createChatCompletion.bind(openAIApi),
+  );
 };

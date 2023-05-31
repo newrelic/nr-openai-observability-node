@@ -1,1 +1,1 @@
-export { monitorOpenAI } from './initialize';
+export { monitorOpenAI } from './monitor';
