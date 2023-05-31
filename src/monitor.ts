@@ -4,13 +4,18 @@ import { createEventClient, EventClientOptions } from './eventsClient';
 import { createChatCompletionEventDataFactory } from './chatCompletionEventDataFactory';
 import { createCompletionEventDataFactory } from './completionEventDataFactory';
 
+export interface MonitorOpenAIOptions extends EventClientOptions {
+  applicationName: string;
+}
+
 export const monitorOpenAI = (
   openAIApi: OpenAIApi,
-  eventClientOptions?: EventClientOptions,
+  options: MonitorOpenAIOptions,
 ) => {
-  const eventClient = createEventClient(eventClientOptions);
+  const eventClient = createEventClient(options);
   const chatCompletionEventDataFactory = createChatCompletionEventDataFactory();
   const completionEventDataFactory = createCompletionEventDataFactory();
+  const { applicationName } = options;
 
   const patchCompletion = (
     createCompletion: OpenAIApi['createCompletion'],
@@ -20,9 +25,10 @@ export const monitorOpenAI = (
       const response = await createCompletion(...args);
 
       try {
-        const eventDataList = completionEventDataFactory.createEventData({
+        const eventDataList = completionEventDataFactory.createEventDataList({
           request: args[0],
           responseData: response.data,
+          applicationName,
           responseTime: getDuration(),
         });
         eventClient.send(eventDataList);
@@ -45,9 +51,10 @@ export const monitorOpenAI = (
         const responseTime = getDuration();
 
         const completionEventDataList =
-          completionEventDataFactory.createEventData({
+          completionEventDataFactory.createEventDataList({
             request: args[0],
             responseData: response.data,
+            applicationName,
             responseTime,
           });
 
@@ -55,6 +62,7 @@ export const monitorOpenAI = (
           chatCompletionEventDataFactory.createEventDataList({
             request: args[0],
             responseData: response.data,
+            applicationName,
             responseTime,
             headers: args[1]?.headers,
             openAiConfiguration: openAIApi['configuration'],

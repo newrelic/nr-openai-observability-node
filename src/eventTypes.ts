@@ -10,6 +10,7 @@ export type OpenAICompletionAttributes = Record<string, string | number>;
 
 export interface ChatCompletionMessageAttributes {
   id: string;
+  applicationName: string;
   content: string;
   role: string;
   completion_id: string;
@@ -20,6 +21,7 @@ export interface ChatCompletionMessageAttributes {
 
 export interface ChatCompletionSummaryAttributes {
   id: string;
+  applicationName: string;
   response_time: number;
   timestamp: number;
   total_tokens?: number;

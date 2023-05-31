@@ -26,6 +26,7 @@ export interface ChatCompletionEventDataFactoryOptions {
   request: CreateChatCompletionRequest;
   responseData: CreateChatCompletionResponse;
   responseTime: number;
+  applicationName: string;
   headers?: RequestHeaders;
   openAiConfiguration?: Configuration;
 }
@@ -44,13 +45,18 @@ export const createChatCompletionEventDataFactory = () => {
 
   const createMessageEventDataList = (
     completion_id: string,
-    { request, responseData }: ChatCompletionEventDataFactoryOptions,
+    {
+      request,
+      responseData,
+      applicationName,
+    }: ChatCompletionEventDataFactoryOptions,
   ): EventData[] => {
     return getMessages(request, responseData).map<EventData>(
       (message, sequence) => ({
         eventType: 'LlmChatCompletionMessage',
         attributes: {
           id: uuid(),
+          applicationName,
           sequence,
           completion_id,
           content: message.content,
@@ -70,6 +76,7 @@ export const createChatCompletionEventDataFactory = () => {
       responseTime: response_time,
       headers,
       openAiConfiguration,
+      applicationName,
     }: ChatCompletionEventDataFactoryOptions,
   ): EventData => {
     const { usage, choices } = responseData;
@@ -77,10 +84,13 @@ export const createChatCompletionEventDataFactory = () => {
     const initialAttributes: ChatCompletionSummaryAttributes = {
       id,
       response_time,
+      applicationName,
       timestamp: Date.now(),
       number_of_messages: getMessages(request, responseData).length,
       vendor: 'openAI',
-      finish_reason: choices[choices.length - 1].finish_reason,
+      finish_reason: choices
+        ? choices[choices.length - 1].finish_reason
+        : undefined,
       prompt_tokens: usage?.prompt_tokens,
       total_tokens: usage?.total_tokens,
       usage_completion_tokens: usage?.completion_tokens,

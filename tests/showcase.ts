@@ -30,6 +30,7 @@ const openAIApi = TestEnvironment.isAzure
 monitorOpenAI(openAIApi, {
   newRelicApiKey: TestEnvironment.nrApiKey,
   host: TestEnvironment.nrHost,
+  applicationName: 'Showcase',
 });
 
 const app = express();

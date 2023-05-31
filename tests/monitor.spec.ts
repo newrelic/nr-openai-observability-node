@@ -7,6 +7,7 @@ const model = 'gpt-4';
 const question = 'Are you alive?';
 const answer = 'No, I am a machine';
 const newRelicApiKey = 'NEW_RELIC_API_KEY';
+const applicationName = 'Test';
 
 const createDelayedResponse =
   (result: any): ((...args: any[]) => Promise<any>) =>
@@ -38,6 +39,7 @@ describe('monitorOpenAI', () => {
 
     monitorOpenAI(openai, {
       newRelicApiKey,
+      applicationName,
     });
 
     await openai.createCompletion({
@@ -51,6 +53,7 @@ describe('monitorOpenAI', () => {
           eventType: 'LlmCompletion',
           attributes: {
             model,
+            applicationName,
             prompt: question,
             response_time: expect.any(Number),
             'choices.0.text': choices[0].text,
@@ -89,6 +92,7 @@ describe('monitorOpenAI', () => {
 
       monitorOpenAI(openai, {
         newRelicApiKey,
+        applicationName,
       });
 
       const messages = [
@@ -111,6 +115,7 @@ describe('monitorOpenAI', () => {
             eventType: 'LlmChatCompletionMessage',
             attributes: {
               model,
+              applicationName,
               sequence: 0,
               completion_id: expect.any(String),
               content: question,
@@ -123,6 +128,7 @@ describe('monitorOpenAI', () => {
             eventType: 'LlmChatCompletionMessage',
             attributes: {
               model,
+              applicationName,
               sequence: 1,
               completion_id: expect.any(String),
               content: choices[0].message.content,
@@ -142,6 +148,7 @@ describe('monitorOpenAI', () => {
             eventType: 'LlmChatCompletionSummary',
             attributes: expect.objectContaining({
               model,
+              applicationName,
               id: expect.any(String),
               timestamp: expect.any(Number),
               vendor: 'openAI',

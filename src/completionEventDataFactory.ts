@@ -6,16 +6,18 @@ export interface ChatCompletionEventDataFactoryOptions {
   request: CreateCompletionRequest;
   responseData: CreateCompletionResponse;
   responseTime: number;
+  applicationName: string;
 }
 
 export const createCompletionEventDataFactory = () => {
   const createEventDataList = ({
     request,
     responseData,
+    applicationName,
     responseTime: response_time,
   }: ChatCompletionEventDataFactoryOptions): EventData[] => {
     const attributes = new EventAttributesBuilder({
-      initialAttributes: { response_time },
+      initialAttributes: { response_time, applicationName },
       specialTreatments: {
         messages: {
           parseValue: (value) => JSON.stringify(value),
@@ -33,6 +35,6 @@ export const createCompletionEventDataFactory = () => {
   };
 
   return {
-    createEventData: createEventDataList,
+    createEventDataList,
   };
 };
