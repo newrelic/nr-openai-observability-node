@@ -29,8 +29,7 @@ export const createEventClient = (
 ): OpenAIEventClient => {
   const apiKey =
     options.newRelicApiKey ??
-    Environment.apiKey ??
-    Environment.licenseKey ??
+    Environment.newRelicApiKey ??
     Environment.insertKey;
   if (!apiKey) {
     throw new Error("New Relic API Key wasn't found");

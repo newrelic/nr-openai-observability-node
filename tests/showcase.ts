@@ -28,8 +28,8 @@ const openAIApi = TestEnvironment.isAzure
     );
 
 monitorOpenAI(openAIApi, {
-  newRelicApiKey: TestEnvironment.nrApiKey,
-  host: TestEnvironment.nrHost,
+  newRelicApiKey: TestEnvironment.newRelicApiKey,
+  host: TestEnvironment.newRelicHost,
   applicationName: 'Showcase',
 });
 

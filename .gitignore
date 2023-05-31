@@ -4,5 +4,6 @@ package-lock.json
 dist
 .env
 .env.azure
+.env.test
 .vscode
 .DS_Store

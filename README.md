@@ -50,7 +50,7 @@ export interface EventClientOptions {
 
 You can use your configured environment variable for initialization options:
 
-- NEW_RELIC_API_KEY - API key with insert access used to authenticate the request.
+- NEW_RELIC_LICENSE_KEY - API key with insert access used to authenticate the request.
 
 - NEW_RELIC_LICENSE_KEY - Same as API key.
 

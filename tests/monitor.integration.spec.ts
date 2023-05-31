@@ -1,48 +1,47 @@
-import { ChatCompletionRequestMessageRoleEnum, OpenAIApi } from 'openai';
+import {
+  ChatCompletionRequestMessageRoleEnum,
+  Configuration,
+  OpenAIApi,
+} from 'openai';
 
 import { monitorOpenAI } from '../src';
 import { sendEventMock } from './__mocks__/@newrelic/telemetry-sdk';
+import { TestEnvironment } from './testEnvironment';
 
 const model = 'gpt-4';
 const question = 'Are you alive?';
 const answer = 'No, I am a machine';
-const newRelicApiKey = 'NEW_RELIC_LICENSE_KEY';
 const applicationName = 'Test';
 
-const createDelayedResponse =
-  (result: any): ((...args: any[]) => Promise<any>) =>
-  () =>
-    new Promise((resolve) => setTimeout(() => resolve(result), 1));
+jest.setTimeout(30 * 1000);
 
 describe('monitorOpenAI', () => {
-  let openai: OpenAIApi;
+  let openAIApi: OpenAIApi;
 
   beforeEach(() => {
-    openai = {
-      createCompletion: () => {},
-      createChatCompletion: () => {},
-    } as unknown as OpenAIApi;
+    openAIApi = new OpenAIApi(
+      new Configuration({
+        apiKey: TestEnvironment.openaiApiKey,
+      }),
+    );
+
+    monitorOpenAI(openAIApi, {
+      newRelicApiKey: TestEnvironment.newRelicApiKey,
+      host: TestEnvironment.newRelicHost,
+      applicationName,
+    });
 
     sendEventMock.mockImplementation();
   });
 
-  it('when monitoring createCompletion should send LlmCompletion event', async () => {
+  it('when monitoring createCompletion should send OpenAICompletion event', async () => {
     const choices = [
       {
         text: answer,
       },
     ];
 
-    jest
-      .spyOn(openai, 'createCompletion')
-      .mockImplementation(createDelayedResponse({ data: { choices } }));
-
-    monitorOpenAI(openai, {
-      newRelicApiKey,
-      applicationName,
-    });
-
-    await openai.createCompletion({
+    await openAIApi.createCompletion({
       prompt: question,
       model,
     });
@@ -51,13 +50,13 @@ describe('monitorOpenAI', () => {
       expect.arrayContaining([
         {
           eventType: 'LlmCompletion',
-          attributes: {
+          attributes: expect.objectContaining({
             model,
             applicationName,
             prompt: question,
             response_time: expect.any(Number),
             'choices.0.text': choices[0].text,
-          },
+          }),
         },
       ]),
     );
@@ -84,17 +83,6 @@ describe('monitorOpenAI', () => {
     const array = [{ key: 'arrayKey' }];
 
     beforeEach(async () => {
-      jest.spyOn(openai, 'createChatCompletion').mockImplementation(
-        createDelayedResponse({
-          data: { choices, usage, object, array },
-        }),
-      );
-
-      monitorOpenAI(openai, {
-        newRelicApiKey,
-        applicationName,
-      });
-
       const messages = [
         {
           role: ChatCompletionRequestMessageRoleEnum.User,
@@ -102,13 +90,13 @@ describe('monitorOpenAI', () => {
         },
       ];
 
-      await openai.createChatCompletion({
+      await openAIApi.createChatCompletion({
         messages,
         model,
       });
     });
 
-    it('should send LlmChatCompletionMessage events', async () => {
+    it('should send ChatCompletionMessage events', async () => {
       expect(sendEventMock).toHaveBeenCalledWith(
         expect.arrayContaining([
           {
@@ -141,7 +129,7 @@ describe('monitorOpenAI', () => {
       );
     });
 
-    it('should send LlmChatCompletionSummary event', async () => {
+    it('should send ChatCompletionSummary event', async () => {
       expect(sendEventMock).toHaveBeenCalledWith(
         expect.arrayContaining([
           {
