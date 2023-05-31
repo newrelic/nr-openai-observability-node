@@ -1,30 +1,28 @@
 import { ChatCompletionRequestMessageRoleEnum, OpenAIApi } from 'openai';
 
-import { creteMonitor } from '../src/monitor';
-import { OpenAIEventClient } from '../src/eventsClient';
+import { monitorOpenAI } from '../src';
+import { sendEventMock } from './__mocks__/@newrelic/telemetry-sdk';
 
 const model = 'gpt-4';
 const question = 'Are you alive?';
 const answer = 'No, I am a machine';
+const newRelicApiKey = 'NEW_RELIC_API_KEY';
 
 const createDelayedResponse =
   (result: any): ((...args: any[]) => Promise<any>) =>
   () =>
     new Promise((resolve) => setTimeout(() => resolve(result), 1));
 
-describe('Monitor', () => {
+describe('monitorOpenAI', () => {
   let openai: OpenAIApi;
-  let eventClient: OpenAIEventClient;
 
   beforeEach(() => {
     openai = {
-      createCompletion: jest.fn(),
-      createChatCompletion: jest.fn(),
+      createCompletion: () => {},
+      createChatCompletion: () => {},
     } as unknown as OpenAIApi;
 
-    eventClient = {
-      send: jest.fn(),
-    } as unknown as OpenAIEventClient;
+    sendEventMock.mockImplementation();
   });
 
   it('when monitoring createCompletion should send OpenAICompletion event', async () => {
@@ -38,15 +36,16 @@ describe('Monitor', () => {
       .spyOn(openai, 'createCompletion')
       .mockImplementation(createDelayedResponse({ data: { choices } }));
 
-    const monitor = creteMonitor(openai, eventClient);
-    monitor.start();
+    monitorOpenAI(openai, {
+      newRelicApiKey,
+    });
 
     await openai.createCompletion({
       prompt: question,
       model,
     });
 
-    expect(eventClient.send).toHaveBeenCalledWith(
+    expect(sendEventMock).toHaveBeenCalledWith(
       expect.arrayContaining([
         {
           eventType: 'LlmCompletion',
@@ -88,8 +87,9 @@ describe('Monitor', () => {
         }),
       );
 
-      const monitor = creteMonitor(openai, eventClient);
-      monitor.start();
+      monitorOpenAI(openai, {
+        newRelicApiKey,
+      });
 
       const messages = [
         {
@@ -105,7 +105,7 @@ describe('Monitor', () => {
     });
 
     it('should send ChatCompletionMessage events', async () => {
-      expect(eventClient.send).toHaveBeenCalledWith(
+      expect(sendEventMock).toHaveBeenCalledWith(
         expect.arrayContaining([
           {
             eventType: 'LlmChatCompletionMessage',
@@ -136,7 +136,7 @@ describe('Monitor', () => {
     });
 
     it('should send ChatCompletionSummary event', async () => {
-      expect(eventClient.send).toHaveBeenCalledWith(
+      expect(sendEventMock).toHaveBeenCalledWith(
         expect.arrayContaining([
           {
             eventType: 'LlmChatCompletionSummary',
