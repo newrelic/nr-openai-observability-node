@@ -21,6 +21,7 @@ const configuration = new Configuration({
 const openAIApi = new OpenAIApi(configuration);
 
 initializeOpenAI(openAIApi, {
+  applicationName: 'MyApp'
   apiKey: 'YOUR_NEW_RELIC_AI_API_KEY', // optional
 });
 ```
@@ -28,7 +29,8 @@ initializeOpenAI(openAIApi, {
 ### Initialization Options
 
 ```typescript
-export interface EventClientOptions {
+export interface MonitorOpenAIOptions {
+  applicationName: string;
   /**
    * API key with insert access used to authenticate the request.
    * For more information on creating keys, please see:
@@ -51,8 +53,6 @@ export interface EventClientOptions {
 You can use your configured environment variable for initialization options:
 
 - NEW_RELIC_LICENSE_KEY - API key with insert access used to authenticate the request.
-
-- NEW_RELIC_LICENSE_KEY - Same as API key.
 
 - NEW_RELIC_INSERT_KEY - Same as API key.
 

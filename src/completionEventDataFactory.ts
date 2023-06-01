@@ -10,12 +10,12 @@ export interface ChatCompletionEventDataFactoryOptions {
 }
 
 export const createCompletionEventDataFactory = () => {
-  const createEventDataList = ({
+  const createEventData = ({
     request,
     responseData,
     applicationName,
     responseTime: response_time,
-  }: ChatCompletionEventDataFactoryOptions): EventData[] => {
+  }: ChatCompletionEventDataFactoryOptions): EventData => {
     const attributes = new EventAttributesBuilder({
       initialAttributes: { response_time, applicationName },
       specialTreatments: {
@@ -28,13 +28,10 @@ export const createCompletionEventDataFactory = () => {
       .addObjectAttributes(responseData)
       .getAttributes();
 
-    return [
-      { eventType: 'LlmCompletion', attributes },
-      { eventType: 'OpenAICompletion', attributes },
-    ];
+    return { eventType: 'LlmCompletion', attributes };
   };
 
   return {
-    createEventDataList,
+    createEventData,
   };
 };

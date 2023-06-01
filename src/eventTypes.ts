@@ -1,5 +1,4 @@
 export type EventType =
-  | 'OpenAICompletion'
   | 'LlmCompletion'
   | 'LlmChatCompletionSummary'
   | 'LlmChatCompletionMessage';

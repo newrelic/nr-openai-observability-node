@@ -25,13 +25,13 @@ export const monitorOpenAI = (
       const response = await createCompletion(...args);
 
       try {
-        const eventDataList = completionEventDataFactory.createEventDataList({
+        const eventData = completionEventDataFactory.createEventData({
           request: args[0],
           responseData: response.data,
           applicationName,
           responseTime: getDuration(),
         });
-        eventClient.send(...eventDataList);
+        eventClient.send(eventData);
       } catch (error: any) {
         console.error(error);
       }
@@ -50,13 +50,12 @@ export const monitorOpenAI = (
       try {
         const responseTime = getDuration();
 
-        const completionEventDataList =
-          completionEventDataFactory.createEventDataList({
-            request: args[0],
-            responseData: response.data,
-            applicationName,
-            responseTime,
-          });
+        const completionEventData = completionEventDataFactory.createEventData({
+          request: args[0],
+          responseData: response.data,
+          applicationName,
+          responseTime,
+        });
 
         const chatCompletionEventDataList =
           chatCompletionEventDataFactory.createEventDataList({
@@ -67,10 +66,8 @@ export const monitorOpenAI = (
             headers: args[1]?.headers,
             openAiConfiguration: openAIApi['configuration'],
           });
-        eventClient.send(
-          ...chatCompletionEventDataList,
-          ...completionEventDataList,
-        );
+
+        eventClient.send(completionEventData, ...chatCompletionEventDataList);
       } catch (error: any) {
         console.error(error);
       }
