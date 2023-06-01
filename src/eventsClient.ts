@@ -21,7 +21,7 @@ export interface EventClientOptions {
 }
 
 export interface OpenAIEventClient {
-  send: (eventDataList: EventData[]) => void;
+  send: (...eventDataList: EventData[]) => void;
 }
 
 export const createEventClient = (
@@ -41,7 +41,7 @@ export const createEventClient = (
     host: options.host ?? Environment.host,
   });
 
-  const send: OpenAIEventClient['send'] = (eventDataList) => {
+  const send: OpenAIEventClient['send'] = (...eventDataList) => {
     const eventBatch = new EventBatch();
 
     eventDataList.forEach(({ eventType, attributes }) => {

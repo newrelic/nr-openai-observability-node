@@ -1,7 +1,10 @@
 import { ChatCompletionRequestMessageRoleEnum, OpenAIApi } from 'openai';
 
 import { monitorOpenAI } from '../src';
-import { sendEventMock } from './__mocks__/@newrelic/telemetry-sdk';
+import {
+  getSentEvent,
+  sendEventMock,
+} from './__mocks__/@newrelic/telemetry-sdk';
 
 const model = 'gpt-4';
 const question = 'Are you alive?';
@@ -47,20 +50,16 @@ describe('monitorOpenAI', () => {
       model,
     });
 
-    expect(sendEventMock).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        {
-          eventType: 'LlmCompletion',
-          attributes: {
-            model,
-            applicationName,
-            prompt: question,
-            response_time: expect.any(Number),
-            'choices.0.text': choices[0].text,
-          },
-        },
-      ]),
-    );
+    expect(getSentEvent(0)).toEqual({
+      eventType: 'LlmCompletion',
+      attributes: {
+        model,
+        applicationName,
+        prompt: question,
+        response_time: expect.any(Number),
+        'choices.0.text': choices[0].text,
+      },
+    });
   });
 
   describe('when monitoring createChatCompletion', () => {
@@ -109,61 +108,53 @@ describe('monitorOpenAI', () => {
     });
 
     it('should send LlmChatCompletionMessage events', async () => {
-      expect(sendEventMock).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          {
-            eventType: 'LlmChatCompletionMessage',
-            attributes: {
-              model,
-              applicationName,
-              sequence: 0,
-              completion_id: expect.any(String),
-              content: question,
-              id: expect.any(String),
-              role: ChatCompletionRequestMessageRoleEnum.User,
-              vendor: 'openAI',
-            },
-          },
-          {
-            eventType: 'LlmChatCompletionMessage',
-            attributes: {
-              model,
-              applicationName,
-              sequence: 1,
-              completion_id: expect.any(String),
-              content: choices[0].message.content,
-              id: expect.any(String),
-              role: choices[0].message.role,
-              vendor: 'openAI',
-            },
-          },
-        ]),
-      );
+      expect(getSentEvent(0)).toEqual({
+        eventType: 'LlmChatCompletionMessage',
+        attributes: {
+          model,
+          applicationName,
+          sequence: 0,
+          completion_id: expect.any(String),
+          content: question,
+          id: expect.any(String),
+          role: ChatCompletionRequestMessageRoleEnum.User,
+          vendor: 'openAI',
+        },
+      });
+      expect(getSentEvent(1)).toEqual({
+        eventType: 'LlmChatCompletionMessage',
+        attributes: {
+          model,
+          applicationName,
+          sequence: 1,
+          completion_id: expect.any(String),
+          content: choices[0].message.content,
+          id: expect.any(String),
+          role: choices[0].message.role,
+          vendor: 'openAI',
+        },
+      });
     });
 
     it('should send LlmChatCompletionSummary event', async () => {
-      expect(sendEventMock).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          {
-            eventType: 'LlmChatCompletionSummary',
-            attributes: expect.objectContaining({
-              model,
-              applicationName,
-              id: expect.any(String),
-              timestamp: expect.any(Number),
-              vendor: 'openAI',
-              finish_reason: choices[0].finish_reason,
-              response_time: expect.any(Number),
-              number_of_messages: 2,
-              prompt_tokens: usage?.prompt_tokens,
-              total_tokens: usage?.total_tokens,
-              usage_completion_tokens: usage?.completion_tokens,
-              'array.0.key': array[0].key,
-              'object.key': object.key,
-            }),
-          },
-        ]),
-      );
+      expect(getSentEvent(2)).toEqual({
+        eventType: 'LlmChatCompletionSummary',
+        attributes: expect.objectContaining({
+          model,
+          applicationName,
+          id: expect.any(String),
+          timestamp: expect.any(Number),
+          vendor: 'openAI',
+          finish_reason: choices[0].finish_reason,
+          response_time: expect.any(Number),
+          number_of_messages: 2,
+          prompt_tokens: usage?.prompt_tokens,
+          total_tokens: usage?.total_tokens,
+          usage_completion_tokens: usage?.completion_tokens,
+          'array.0.key': array[0].key,
+          'object.key': object.key,
+        }),
+      });
     });
   });
 });

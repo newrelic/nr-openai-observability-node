@@ -29,8 +29,8 @@ export const createCompletionEventDataFactory = () => {
       .getAttributes();
 
     return [
-      { eventType: 'OpenAICompletion', attributes },
       { eventType: 'LlmCompletion', attributes },
+      { eventType: 'OpenAICompletion', attributes },
     ];
   };
 

@@ -31,7 +31,7 @@ export const monitorOpenAI = (
           applicationName,
           responseTime: getDuration(),
         });
-        eventClient.send(eventDataList);
+        eventClient.send(...eventDataList);
       } catch (error: any) {
         console.error(error);
       }
@@ -67,10 +67,10 @@ export const monitorOpenAI = (
             headers: args[1]?.headers,
             openAiConfiguration: openAIApi['configuration'],
           });
-        eventClient.send([
+        eventClient.send(
           ...chatCompletionEventDataList,
           ...completionEventDataList,
-        ]);
+        );
       } catch (error: any) {
         console.error(error);
       }

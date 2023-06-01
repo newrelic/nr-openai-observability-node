@@ -1,4 +1,9 @@
+import { EventData } from '../../../src/eventTypes';
+
 export const sendEventMock = jest.fn();
+
+export const getSentEvent = (index: number): EventData =>
+  sendEventMock.mock.calls[0][0][index];
 
 class EventClient {
   send = (eventBatch: EventBatch) => {
