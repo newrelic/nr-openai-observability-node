@@ -121,6 +121,7 @@ describe('monitorOpenAI', () => {
           vendor: 'openAI',
         },
       });
+
       expect(getSentEvent(1)).toEqual({
         eventType: 'LlmChatCompletionMessage',
         attributes: {
@@ -139,7 +140,7 @@ describe('monitorOpenAI', () => {
     it('should send LlmChatCompletionSummary event', async () => {
       expect(getSentEvent(2)).toEqual({
         eventType: 'LlmChatCompletionSummary',
-        attributes: expect.objectContaining({
+        attributes: {
           model,
           applicationName,
           id: expect.any(String),
@@ -153,7 +154,7 @@ describe('monitorOpenAI', () => {
           usage_completion_tokens: usage?.completion_tokens,
           'array.0.key': array[0].key,
           'object.key': object.key,
-        }),
+        },
       });
     });
   });

@@ -5,12 +5,13 @@ import {
 } from 'openai';
 
 import { monitorOpenAI } from '../src';
-import { sendEventMock } from './__mocks__/@newrelic/telemetry-sdk';
+import {
+  getSentEvent,
+  sendEventMock,
+} from './__mocks__/@newrelic/telemetry-sdk';
 import { TestEnvironment } from './testEnvironment';
 
-const model = 'gpt-4';
 const question = 'Are you alive?';
-const answer = 'No, I am a machine';
 const applicationName = 'Test';
 
 jest.setTimeout(30 * 1000);
@@ -34,53 +35,31 @@ describe('monitorOpenAI', () => {
     sendEventMock.mockImplementation();
   });
 
-  it('when monitoring createCompletion should send OpenAICompletion event', async () => {
-    const choices = [
-      {
-        text: answer,
-      },
-    ];
+  it('when monitoring createCompletion should send LlmCompletion event', async () => {
+    const model = 'text-davinci-003';
 
     await openAIApi.createCompletion({
       prompt: question,
       model,
     });
 
-    expect(sendEventMock).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        {
-          eventType: 'LlmCompletion',
-          attributes: expect.objectContaining({
-            model,
-            applicationName,
-            prompt: question,
-            response_time: expect.any(Number),
-            'choices.0.text': choices[0].text,
-          }),
-        },
-      ]),
-    );
+    expect(getSentEvent(0)).toEqual({
+      eventType: 'LlmCompletion',
+      attributes: expect.objectContaining({
+        model,
+        applicationName,
+        prompt: question,
+        response_time: expect.any(Number),
+        'usage.completion_tokens': 9,
+        'usage.prompt_tokens': 4,
+        'usage.total_tokens': 13,
+        'choices.0.text': expect.any(String),
+      }),
+    });
   });
 
   describe('when monitoring createChatCompletion', () => {
-    const choices = [
-      {
-        message: {
-          content: answer,
-          role: ChatCompletionRequestMessageRoleEnum.Assistant,
-        },
-        finish_reason: 'stop',
-      },
-    ];
-
-    const usage = {
-      prompt_tokens: 1,
-      total_tokens: 2,
-      completion_tokens: 3,
-    };
-
-    const object = { key: 'objectKey' };
-    const array = [{ key: 'arrayKey' }];
+    const model = 'gpt-4';
 
     beforeEach(async () => {
       const messages = [
@@ -96,62 +75,56 @@ describe('monitorOpenAI', () => {
       });
     });
 
-    it('should send ChatCompletionMessage events', async () => {
-      expect(sendEventMock).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          {
-            eventType: 'LlmChatCompletionMessage',
-            attributes: {
-              model,
-              applicationName,
-              sequence: 0,
-              completion_id: expect.any(String),
-              content: question,
-              id: expect.any(String),
-              role: ChatCompletionRequestMessageRoleEnum.User,
-              vendor: 'openAI',
-            },
-          },
-          {
-            eventType: 'LlmChatCompletionMessage',
-            attributes: {
-              model,
-              applicationName,
-              sequence: 1,
-              completion_id: expect.any(String),
-              content: choices[0].message.content,
-              id: expect.any(String),
-              role: choices[0].message.role,
-              vendor: 'openAI',
-            },
-          },
-        ]),
-      );
+    it('should send LlmChatCompletionMessage events', async () => {
+      expect(getSentEvent(0)).toEqual({
+        eventType: 'LlmChatCompletionMessage',
+        attributes: {
+          model,
+          applicationName,
+          sequence: 0,
+          completion_id: expect.any(String),
+          content: question,
+          id: expect.any(String),
+          role: ChatCompletionRequestMessageRoleEnum.User,
+          vendor: 'openAI',
+        },
+      });
+
+      expect(getSentEvent(1)).toEqual({
+        eventType: 'LlmChatCompletionMessage',
+        attributes: {
+          model,
+          applicationName,
+          sequence: 1,
+          completion_id: expect.any(String),
+          content: expect.any(String),
+          id: expect.any(String),
+          role: ChatCompletionRequestMessageRoleEnum.Assistant,
+          vendor: 'openAI',
+        },
+      });
     });
 
-    it('should send ChatCompletionSummary event', async () => {
-      expect(sendEventMock).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          {
-            eventType: 'LlmChatCompletionSummary',
-            attributes: expect.objectContaining({
-              model,
-              applicationName,
-              id: expect.any(String),
-              timestamp: expect.any(Number),
-              vendor: 'openAI',
-              finish_reason: choices[0].finish_reason,
-              response_time: expect.any(Number),
-              number_of_messages: 2,
-              prompt_tokens: usage?.prompt_tokens,
-              total_tokens: usage?.total_tokens,
-              usage_completion_tokens: usage?.completion_tokens,
-              'array.0.key': array[0].key,
-              'object.key': object.key,
-            }),
-          },
-        ]),
-      );
+    it('should send LlmChatCompletionSummary event', async () => {
+      expect(getSentEvent(2)).toEqual({
+        eventType: 'LlmChatCompletionSummary',
+        attributes: {
+          model: 'gpt-4-0314',
+          applicationName,
+          id: expect.any(String),
+          timestamp: expect.any(Number),
+          created: expect.any(Number),
+          vendor: 'openAI',
+          finish_reason: 'stop',
+          response_time: expect.any(Number),
+          number_of_messages: 2,
+          object: 'chat.completion',
+          prompt_tokens: 11,
+          total_tokens: expect.any(Number),
+          usage_completion_tokens: expect.any(Number),
+          api_key_last_four_digits: 'sk-8VS9',
+        },
+      });
     });
   });
 });
