@@ -20,10 +20,12 @@ const configuration = new Configuration({
 
 const openAIApi = new OpenAIApi(configuration);
 
-initializeOpenAI(openAIApi, {
-  applicationName: 'MyApp'
-  apiKey: 'YOUR_NEW_RELIC_AI_API_KEY', // optional
+monitorOpenAI(openAIApi, {
+  applicationName: 'MyApp',
+  apiKey: 'YOUR_NEW_RELIC_AI_API_KEY',
 });
+
+const response = await openAIApi.createChatCompletion({});
 ```
 
 ### Initialization Options

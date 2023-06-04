@@ -17,7 +17,7 @@ import {
 } from './utility';
 import { EventAttributesBuilder } from './eventAttributesBuilder';
 
-export type RequestHeaders = Record<
+export type ResponseHeaders = Record<
   string,
   string | number | boolean | undefined
 >;
@@ -27,7 +27,7 @@ export interface ChatCompletionEventDataFactoryOptions {
   responseData: CreateChatCompletionResponse;
   responseTime: number;
   applicationName: string;
-  headers?: RequestHeaders;
+  headers: ResponseHeaders;
   openAiConfiguration?: Configuration;
 }
 
@@ -94,14 +94,14 @@ export const createChatCompletionEventDataFactory = () => {
       prompt_tokens: usage?.prompt_tokens,
       total_tokens: usage?.total_tokens,
       usage_completion_tokens: usage?.completion_tokens,
-      ratelimit_limit_requests: headers?.['x-ratelimit-limit-requests'],
-      ratelimit_limit_tokens: headers?.['x-ratelimit-limit-tokens'],
-      ratelimit_reset_tokens: headers?.['x-ratelimit-reset-tokens'],
-      ratelimit_reset_requests: headers?.['x-ratelimit-reset-requests'],
-      ratelimit_remaining_tokens: headers?.['x-ratelimit-remaining-tokens'],
-      ratelimit_remaining_requests: headers?.['x-ratelimit-remaining-requests'],
-      organization: openAiConfiguration?.organization,
-      api_version: openAiConfiguration?.baseOptions?.apiVersion,
+      ratelimit_limit_requests: headers['x-ratelimit-limit-requests'],
+      ratelimit_limit_tokens: headers['x-ratelimit-limit-tokens'],
+      ratelimit_reset_tokens: headers['x-ratelimit-reset-tokens'],
+      ratelimit_reset_requests: headers['x-ratelimit-reset-requests'],
+      ratelimit_remaining_tokens: headers['x-ratelimit-remaining-tokens'],
+      ratelimit_remaining_requests: headers['x-ratelimit-remaining-requests'],
+      organization: headers['openai-organization'],
+      api_version: headers['openai-version'],
       api_key_last_four_digits: isString(openAiConfiguration?.apiKey)
         ? `sk-${openAiConfiguration?.apiKey.slice(-4)}`
         : undefined,
@@ -125,8 +125,8 @@ export const createChatCompletionEventDataFactory = () => {
         },
       },
     })
-      .addObjectAttributes(request)
       .addObjectAttributes(responseData)
+      .addObjectAttributes(request)
       .getAttributes();
 
     return {

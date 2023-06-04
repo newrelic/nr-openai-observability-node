@@ -26,8 +26,8 @@ export interface ChatCompletionSummaryAttributes {
   total_tokens?: number;
   prompt_tokens?: number;
   usage_completion_tokens?: number;
-  api_version?: string;
-  organization?: string;
+  api_version?: any;
+  organization?: any;
   api_key_last_four_digits?: string;
   finish_reason?: string;
   user_id?: string;

@@ -50,24 +50,17 @@ export const monitorOpenAI = (
       try {
         const responseTime = getDuration();
 
-        const completionEventData = completionEventDataFactory.createEventData({
-          request: args[0],
-          responseData: response.data,
-          applicationName,
-          responseTime,
-        });
-
-        const chatCompletionEventDataList =
+        const eventDataList =
           chatCompletionEventDataFactory.createEventDataList({
             request: args[0],
             responseData: response.data,
             applicationName,
             responseTime,
-            headers: args[1]?.headers,
+            headers: response.headers,
             openAiConfiguration: openAIApi['configuration'],
           });
 
-        eventClient.send(completionEventData, ...chatCompletionEventDataList);
+        eventClient.send(...eventDataList);
       } catch (error: any) {
         console.error(error);
       }

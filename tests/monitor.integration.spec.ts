@@ -27,12 +27,12 @@ describe('monitorOpenAI', () => {
     );
 
     monitorOpenAI(openAIApi, {
+      applicationName,
       newRelicApiKey: TestEnvironment.newRelicApiKey,
       host: TestEnvironment.newRelicHost,
-      applicationName,
     });
 
-    sendEventMock.mockImplementation();
+    sendEventMock.mockClear();
   });
 
   it('when monitoring createCompletion should send LlmCompletion event', async () => {
@@ -60,6 +60,7 @@ describe('monitorOpenAI', () => {
 
   describe('when monitoring createChatCompletion', () => {
     const model = 'gpt-4';
+    const temperature = 1;
 
     beforeEach(async () => {
       const messages = [
@@ -72,6 +73,7 @@ describe('monitorOpenAI', () => {
       await openAIApi.createChatCompletion({
         messages,
         model,
+        temperature,
       });
     });
 
@@ -109,7 +111,8 @@ describe('monitorOpenAI', () => {
       expect(getSentEvent(2)).toEqual({
         eventType: 'LlmChatCompletionSummary',
         attributes: {
-          model: 'gpt-4-0314',
+          model,
+          temperature,
           applicationName,
           id: expect.any(String),
           timestamp: expect.any(Number),
@@ -120,9 +123,17 @@ describe('monitorOpenAI', () => {
           number_of_messages: 2,
           object: 'chat.completion',
           prompt_tokens: 11,
+          api_key_last_four_digits: 'sk-8VS9',
           total_tokens: expect.any(Number),
           usage_completion_tokens: expect.any(Number),
-          api_key_last_four_digits: 'sk-8VS9',
+          ratelimit_limit_requests: expect.any(String),
+          ratelimit_limit_tokens: expect.any(String),
+          ratelimit_remaining_requests: expect.any(String),
+          ratelimit_remaining_tokens: expect.any(String),
+          ratelimit_reset_requests: expect.any(String),
+          ratelimit_reset_tokens: expect.any(String),
+          organization: expect.any(String),
+          api_version: '2020-10-01',
         },
       });
     });

@@ -41,6 +41,8 @@ app.get('/createCompletion/:prompt', async (req, res) => {
     const { data } = await openAIApi.createCompletion({
       model: 'text-davinci-003',
       prompt,
+      temperature: 1,
+      max_tokens: 5,
     });
     res.send(data.choices.map(({ text }) => text).join(';'));
   } catch (error: any) {
@@ -61,6 +63,8 @@ app.get('/createChatCompletion/:content', async (req, res) => {
     const { data } = await openAIApi.createChatCompletion({
       model: 'gpt-4',
       messages,
+      temperature: 1,
+      max_tokens: 5,
     });
     res.send(data.choices.map(({ message }) => message?.content).join(';'));
   } catch (error: any) {

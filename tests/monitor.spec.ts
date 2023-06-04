@@ -11,6 +11,7 @@ const question = 'Are you alive?';
 const answer = 'No, I am a machine';
 const newRelicApiKey = 'NEW_RELIC_LICENSE_KEY';
 const applicationName = 'Test';
+const temperature = 1;
 
 const createDelayedResponse =
   (result: any): ((...args: any[]) => Promise<any>) =>
@@ -26,7 +27,7 @@ describe('monitorOpenAI', () => {
       createChatCompletion: () => {},
     } as unknown as OpenAIApi;
 
-    sendEventMock.mockImplementation();
+    sendEventMock.mockClear();
   });
 
   it('when monitoring createCompletion should send LlmCompletion event', async () => {
@@ -86,6 +87,7 @@ describe('monitorOpenAI', () => {
       jest.spyOn(openai, 'createChatCompletion').mockImplementation(
         createDelayedResponse({
           data: { choices, usage, object, array },
+          headers: {},
         }),
       );
 
@@ -103,6 +105,7 @@ describe('monitorOpenAI', () => {
 
       await openai.createChatCompletion({
         messages,
+        temperature,
         model,
       });
     });
@@ -143,6 +146,7 @@ describe('monitorOpenAI', () => {
         attributes: {
           model,
           applicationName,
+          temperature,
           id: expect.any(String),
           timestamp: expect.any(Number),
           vendor: 'openAI',
