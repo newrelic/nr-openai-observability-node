@@ -4,11 +4,13 @@
 
 ## Installation
 
-Use your favorite package manager to install `nr-openai-observability-node`.
+Use your favorite package manager to install `@newrelic/nr-openai-observability-node`.
 
-    $ npm install nr-openai-observability-node
+    $ npm install @newrelic/nr-openai-observability-node
 
 ## Getting Started
+
+Just call `monitorOpenAI` with the `openai` instance and use it as usual. It will be patched behind the scenes to send data to New Relic.
 
 ```typescript
 import { Configuration, OpenAIApi } from 'openai';
@@ -32,13 +34,16 @@ const response = await openAIApi.createChatCompletion({});
 
 ```typescript
 export interface MonitorOpenAIOptions {
+  /**
+   * Your application name in New Relic, must provided.
+   */
   applicationName: string;
   /**
    * API key with insert access used to authenticate the request.
    * For more information on creating keys, please see:
    * https://docs.newrelic.com/docs/insights/insights-data-sources/custom-data/introduction-event-api#register
    */
-  apiKey?: string;
+  newRelicApiKey?: string;
   /**
    * Optional host override for event endpoint.
    */
@@ -58,11 +63,13 @@ You can use your configured environment variable for initialization options:
 
 - NEW_RELIC_INSERT_KEY - Same as API key.
 
-- EVENT_CLIENT_HOST - Optional host override for event endpoint.
+- EVENT_CLIENT_HOST - Optional host override for events endpoint.
 
 ## Testing
 
     $ npm run test
+
+> Note: `monitor.integration` test requires `.env.test` file with `OPENAI_API_KEY` configured.
 
 ## Support
 
