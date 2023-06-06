@@ -79,7 +79,7 @@ export const createChatCompletionEventDataFactory = () => {
       applicationName,
     }: ChatCompletionEventDataFactoryOptions,
   ): EventData => {
-    const { usage, choices } = responseData;
+    const { choices } = responseData;
 
     const initialAttributes: ChatCompletionSummaryAttributes = {
       id,
@@ -91,9 +91,6 @@ export const createChatCompletionEventDataFactory = () => {
       finish_reason: choices
         ? choices[choices.length - 1].finish_reason
         : undefined,
-      prompt_tokens: usage?.prompt_tokens,
-      total_tokens: usage?.total_tokens,
-      usage_completion_tokens: usage?.completion_tokens,
       ratelimit_limit_requests: headers['x-ratelimit-limit-requests'],
       ratelimit_limit_tokens: headers['x-ratelimit-limit-tokens'],
       ratelimit_reset_tokens: headers['x-ratelimit-reset-tokens'],
@@ -111,9 +108,6 @@ export const createChatCompletionEventDataFactory = () => {
       initialAttributes:
         removeUndefinedValues<EventAttributes>(initialAttributes),
       specialTreatments: {
-        usage: {
-          skip: true,
-        },
         choices: {
           skip: true,
         },

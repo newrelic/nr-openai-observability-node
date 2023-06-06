@@ -74,19 +74,13 @@ describe('monitorOpenAI', () => {
       },
     ];
 
-    const usage = {
-      prompt_tokens: 1,
-      total_tokens: 2,
-      completion_tokens: 3,
-    };
-
     const object = { key: 'objectKey' };
     const array = [{ key: 'arrayKey' }];
 
     beforeEach(async () => {
       jest.spyOn(openai, 'createChatCompletion').mockImplementation(
         createDelayedResponse({
-          data: { choices, usage, object, array },
+          data: { choices, object, array },
           headers: {},
         }),
       );
@@ -153,9 +147,6 @@ describe('monitorOpenAI', () => {
           finish_reason: choices[0].finish_reason,
           response_time: expect.any(Number),
           number_of_messages: 2,
-          prompt_tokens: usage?.prompt_tokens,
-          total_tokens: usage?.total_tokens,
-          usage_completion_tokens: usage?.completion_tokens,
           'array.0.key': array[0].key,
           'object.key': object.key,
         },

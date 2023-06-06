@@ -1,9 +1,11 @@
 {
   "name": "@newrelic/nr-openai-observability-node",
   "version": "1.0.0",
+  "private": false,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "Apache-2.0",
+  "author": "air-opensource@newrelic.com",
   "scripts": {
     "start:showcase": "ts-node tests/showcase",
     "start:showcase:azure": "OPENAI_ENV=AZURE ts-node tests/showcase",
@@ -32,5 +34,20 @@
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
-  }
+  },
+  "files": [
+    "dist",
+    "src",
+    "LICENSE",
+    "README.md",
+    "CHAGELOG.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/newrelic/nr-openai-observability-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/newrelic/nr-openai-observability-node/issues"
+  },
+  "homepage": "https://github.com/newrelic/nr-openai-observability-node#readme"
 }
