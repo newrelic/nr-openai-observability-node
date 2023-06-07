@@ -14,20 +14,23 @@ Just call `monitorOpenAI` with the `openai` instance and use it as usual. It wil
 
 ```typescript
 import { Configuration, OpenAIApi } from 'openai';
-import { initializeOpenAI } from 'nr-openai-observability-node';
+import { monitorOpenAI } from '@newrelic/nr-openai-observability-node';
 
 const configuration = new Configuration({
-  apiKey: 'YOUR_OPEN_AI_API_KEY',
+  apiKey: 'OPENAI_API_KEY',
 });
 
 const openAIApi = new OpenAIApi(configuration);
 
 monitorOpenAI(openAIApi, {
   applicationName: 'MyApp',
-  apiKey: 'YOUR_NEW_RELIC_AI_API_KEY',
+  apiKey: 'NEW_RELIC_LICENSE_KEY',
 });
 
-const response = await openAIApi.createChatCompletion({});
+const response = await openAIApi.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [{ role: 'user', content: 'hi' }]
+});
 ```
 
 ### Initialization Options
