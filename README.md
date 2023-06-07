@@ -6,7 +6,7 @@
 
 Use your favorite package manager to install `@newrelic/nr-openai-observability-node`.
 
-    $ npm install @newrelic/nr-openai-observability-node
+    $ npm install newrelic/nr-openai-observability-node#main 
 
 ## Getting Started
 
@@ -14,22 +14,30 @@ Just call `monitorOpenAI` with the `openai` instance and use it as usual. It wil
 
 ```typescript
 import { Configuration, OpenAIApi } from 'openai';
-import { initializeOpenAI } from 'nr-openai-observability-node';
+import { monitorOpenAI } from '@newrelic/nr-openai-observability-node';
 
 const configuration = new Configuration({
-  apiKey: 'YOUR_OPEN_AI_API_KEY',
+  apiKey: 'OPENAI_API_KEY',
 });
 
 const openAIApi = new OpenAIApi(configuration);
 
 monitorOpenAI(openAIApi, {
   applicationName: 'MyApp',
-  apiKey: 'YOUR_NEW_RELIC_AI_API_KEY',
+  apiKey: 'NEW_RELIC_LICENSE_KEY',
 });
 
-const response = await openAIApi.createChatCompletion({});
-```
+const response = await openAIApi.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [{ role: 'user', content: 'What is Observability?' }]
+});
 
+console.log(response.data.choices[0].message)
+```
+Make sure that you add module type to `package.json`
+```
+"type": "module"
+```
 ### Initialization Options
 
 ```typescript
@@ -54,6 +62,8 @@ export interface MonitorOpenAIOptions {
   port?: number;
 }
 ```
+### How to test it? 
+Check your application in the [New Relic UI](https://onenr.io/0oR8YNdmPjG) New Relic UI to see the real time data.
 
 ### Environment Variables
 
