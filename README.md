@@ -31,8 +31,13 @@ const response = await openAIApi.createChatCompletion({
     model: "gpt-3.5-turbo",
     messages: [{ role: 'user', content: 'What is Observability?' }]
 });
-```
 
+console.log(response.data.choices[0].message)
+```
+Make sure that you add module type to `package.json`
+```
+"type": "module"
+```
 ### Initialization Options
 
 ```typescript
@@ -57,6 +62,8 @@ export interface MonitorOpenAIOptions {
   port?: number;
 }
 ```
+### How to test it? 
+Check your application in the [New Relic UI](https://onenr.io/0oR8YNdmPjG) New Relic UI to see the real time data.
 
 ### Environment Variables
 
