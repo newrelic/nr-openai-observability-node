@@ -30,7 +30,7 @@ monitorOpenAI(openAIApi, {
 
 const response = await openAIApi.createChatCompletion({
     model: "gpt-3.5-turbo",
-    messages: [{ role: 'user', content: 'hi' }]
+    messages: [{ role: 'user', content: 'What is Observability?' }]
 });
 ```
 
