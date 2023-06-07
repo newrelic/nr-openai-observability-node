@@ -7,6 +7,7 @@
 Use your favorite package manager to install `@newrelic/nr-openai-observability-node`.
 
     $ npm install @newrelic/nr-openai-observability-node
+    $ npm install  newrelic/nr-openai-observability-node#main 
 
 ## Getting Started
 
