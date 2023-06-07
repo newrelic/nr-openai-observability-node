@@ -4,9 +4,9 @@
 
 ## Installation
 
-Use your favorite package manager to install `@newrelic/nr-openai-observability-node`.
+Use your favorite package manager to install `@newrelic/openai-observability`.
 
-    $ npm install newrelic/nr-openai-observability-node#main 
+    $ npm install @newrelic/openai-observability
 
 ## Getting Started
 
@@ -14,7 +14,7 @@ Just call `monitorOpenAI` with the `openai` instance and use it as usual. It wil
 
 ```typescript
 import { Configuration, OpenAIApi } from 'openai';
-import { monitorOpenAI } from '@newrelic/nr-openai-observability-node';
+import { monitorOpenAI } from '@newrelic/openai-observability';
 
 const configuration = new Configuration({
   apiKey: 'OPENAI_API_KEY',
@@ -28,16 +28,19 @@ monitorOpenAI(openAIApi, {
 });
 
 const response = await openAIApi.createChatCompletion({
-    model: "gpt-3.5-turbo",
-    messages: [{ role: 'user', content: 'What is Observability?' }]
+  model: 'gpt-3.5-turbo',
+  messages: [{ role: 'user', content: 'What is Observability?' }],
 });
 
-console.log(response.data.choices[0].message)
+console.log(response.data.choices[0].message);
 ```
+
 Make sure that you add module type to `package.json`
+
 ```
 "type": "module"
 ```
+
 ### Initialization Options
 
 ```typescript
@@ -62,7 +65,9 @@ export interface MonitorOpenAIOptions {
   port?: number;
 }
 ```
-### How to test it? 
+
+### How to test it?
+
 Check your application in the [New Relic UI](https://onenr.io/0oR8YNdmPjG) New Relic UI to see the real time data.
 
 ### Environment Variables
@@ -112,7 +117,7 @@ If you believe you have found a security vulnerability in this project or any of
 
 If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
 
-To [all contributors](<https://github.com/newrelic/newrelic-telemetry-sdk-node/graphs/contributors), we thank you! Without your contribution, this project would not be what it is today. We also host a community project page dedicated to [New Relic Telemetry SDK (Node)](https://opensource.newrelic.com/projects/newrelic/newrelic-telemetry-sdk-node).
+To [all contributors](https://github.com/newrelic/newrelic-telemetry-sdk-node/graphs/contributors), we thank you! Without your contribution, this project would not be what it is today. We also host a community project page dedicated to [New Relic Telemetry SDK (Node)](https://opensource.newrelic.com/projects/newrelic/newrelic-telemetry-sdk-node).
 
 ## License
 
