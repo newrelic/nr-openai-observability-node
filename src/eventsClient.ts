@@ -1,5 +1,4 @@
 import { telemetry } from '@newrelic/telemetry-sdk';
-import { Environment } from './environment';
 import { EventData } from './eventTypes';
 const { Event, EventBatch, EventClient } = telemetry.events;
 
@@ -27,10 +26,16 @@ export interface OpenAIEventClient {
 export const createEventClient = (
   options: EventClientOptions = {},
 ): OpenAIEventClient => {
+  const environment = {
+    newRelicApiKey: process.env.NEW_RELIC_LICENSE_KEY,
+    insertKey: process.env.NEW_RELIC_INSERT_KEY,
+    host: process.env.EVENT_CLIENT_HOST,
+  };
+
   const apiKey =
     options.newRelicApiKey ??
-    Environment.newRelicApiKey ??
-    Environment.insertKey;
+    environment.newRelicApiKey ??
+    environment.insertKey;
   if (!apiKey) {
     throw new Error("New Relic API Key wasn't found");
   }
@@ -38,7 +43,7 @@ export const createEventClient = (
   const eventClient = new EventClient({
     ...options,
     apiKey,
-    host: options.host ?? Environment.host,
+    host: options.host ?? environment.host,
   });
 
   const send: OpenAIEventClient['send'] = (...eventDataList) => {
