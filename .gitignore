@@ -1,6 +1,5 @@
 node_modules
-yarn.lock
-package-lock.json
+dist
 .env
 .env.azure
 .env.test
