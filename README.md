@@ -24,7 +24,7 @@ const openAIApi = new OpenAIApi(configuration);
 
 monitorOpenAI(openAIApi, {
   applicationName: 'MyApp',
-  apiKey: 'NEW_RELIC_LICENSE_KEY',
+  newRelicApiKey: 'NEW_RELIC_LICENSE_KEY',
 });
 
 const response = await openAIApi.createChatCompletion({
