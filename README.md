@@ -24,7 +24,7 @@ const openAIApi = new OpenAIApi(configuration);
 
 monitorOpenAI(openAIApi, {
   applicationName: 'MyApp',
-  apiKey: 'NEW_RELIC_LICENSE_KEY',
+  newRelicApiKey: 'NEW_RELIC_LICENSE_KEY',
 });
 
 const response = await openAIApi.createChatCompletion({
@@ -68,7 +68,7 @@ export interface MonitorOpenAIOptions {
 
 ### How to test it?
 
-Check your application in the [New Relic UI](https://onenr.io/0oR8YNdmPjG) New Relic UI to see the real time data.
+Check your application in the [New Relic UI](https://one.newrelic.com/nr1-core?filters=(domain%20IN%20('MLOPS',%20'MLOPS',%20'MLOPS',%20'MLOPS')%20AND%20type%20IN%20('LLM_APPLICATION',%20'MACHINE_LEARNING_ENDPOINT',%20'MACHINE_LEARNING_MODEL',%20'MACHINE_LEARNING_MODEL_DATA'))) to see the real time data.
 
 ### Environment Variables
 
