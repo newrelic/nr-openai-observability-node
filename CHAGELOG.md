@@ -22,3 +22,11 @@
 ### v1.0.5
 
 - Updated README.
+
+### v1.0.6
+
+- Updated README.
+
+### v1.0.6
+
+- Updated README.
