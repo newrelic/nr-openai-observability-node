@@ -4,7 +4,7 @@ import { EventAttributesBuilder } from './eventAttributesBuilder';
 
 export interface ChatCompletionEventDataFactoryOptions {
   request: CreateCompletionRequest;
-  responseData: CreateCompletionResponse;
+  response: CreateCompletionResponse;
   responseTime: number;
   applicationName: string;
 }
@@ -12,7 +12,7 @@ export interface ChatCompletionEventDataFactoryOptions {
 export const createCompletionEventDataFactory = () => {
   const createEventData = ({
     request,
-    responseData,
+    response,
     applicationName,
     responseTime: response_time,
   }: ChatCompletionEventDataFactoryOptions): EventData => {
@@ -25,7 +25,7 @@ export const createCompletionEventDataFactory = () => {
       },
     })
       .addObjectAttributes(request)
-      .addObjectAttributes(responseData)
+      .addObjectAttributes(response)
       .getAttributes();
 
     return { eventType: 'LlmCompletion', attributes };

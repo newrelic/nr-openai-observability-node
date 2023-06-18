@@ -27,6 +27,13 @@
 
 - Updated README.
 
-### v1.0.6
+### v1.0.7
+
+- Updated README.
+-
+
+### v1.0.8
+
+- Updated `LlmChatCompletionSummary` attributes.
 
 - Updated README.

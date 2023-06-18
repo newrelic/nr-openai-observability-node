@@ -3,7 +3,7 @@ import { ChatCompletionRequestMessageRoleEnum, OpenAIApi } from 'openai';
 import { monitorOpenAI } from '../src';
 import {
   getSentEvent,
-  sendEventMock,
+  sendEventsMock,
 } from './__mocks__/@newrelic/telemetry-sdk';
 
 const model = 'gpt-4';
@@ -27,7 +27,7 @@ describe('monitorOpenAI', () => {
       createChatCompletion: () => {},
     } as unknown as OpenAIApi;
 
-    sendEventMock.mockClear();
+    sendEventsMock.mockClear();
   });
 
   it('when monitoring createCompletion should send LlmCompletion event', async () => {
@@ -80,7 +80,7 @@ describe('monitorOpenAI', () => {
     beforeEach(async () => {
       jest.spyOn(openai, 'createChatCompletion').mockImplementation(
         createDelayedResponse({
-          data: { choices, object, array },
+          data: { choices, object, array, model },
           headers: {},
         }),
       );
@@ -138,7 +138,8 @@ describe('monitorOpenAI', () => {
       expect(getSentEvent(2)).toEqual({
         eventType: 'LlmChatCompletionSummary',
         attributes: {
-          model,
+          'request.model': model,
+          'response.model': model,
           applicationName,
           temperature,
           id: expect.any(String),
