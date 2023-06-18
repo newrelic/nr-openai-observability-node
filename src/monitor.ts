@@ -27,7 +27,7 @@ export const monitorOpenAI = (
       try {
         const eventData = completionEventDataFactory.createEventData({
           request: args[0],
-          responseData: response.data,
+          response: response.data,
           applicationName,
           responseTime: getDuration(),
         });
@@ -53,7 +53,7 @@ export const monitorOpenAI = (
         const eventDataList =
           chatCompletionEventDataFactory.createEventDataList({
             request: args[0],
-            responseData: response.data,
+            response: response.data,
             applicationName,
             responseTime,
             headers: response.headers,

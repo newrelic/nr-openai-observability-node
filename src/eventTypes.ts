@@ -21,6 +21,8 @@ export interface ChatCompletionMessageAttributes {
 export interface ChatCompletionSummaryAttributes {
   id: string;
   applicationName: string;
+  'request.model': string;
+  'response.model': string;
   response_time: number;
   timestamp: number;
   total_tokens?: number;
@@ -34,12 +36,12 @@ export interface ChatCompletionSummaryAttributes {
   api_type?: 'azure' | 'openai';
   vendor: 'openAI';
   number_of_messages: number;
-  ratelimit_limit_requests?: any;
-  ratelimit_limit_tokens?: any;
-  ratelimit_reset_tokens?: any;
-  ratelimit_reset_requests?: any;
-  ratelimit_remaining_tokens?: any;
-  ratelimit_remaining_requests?: any;
+  ratelimit_reset_tokens?: string;
+  ratelimit_reset_requests?: string;
+  ratelimit_limit_requests?: number;
+  ratelimit_limit_tokens?: number;
+  ratelimit_remaining_tokens?: number;
+  ratelimit_remaining_requests?: number;
 }
 
 export type EventData = { eventType: EventType; attributes: EventAttributes };

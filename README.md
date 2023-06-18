@@ -82,6 +82,8 @@ You can use your configured environment variable for initialization options:
 
 ## Testing
 
+If you are contributing to the package, make sure the tests are passing or update them is needed. To run the tests:
+
     $ npm run test
 
 > Note: `monitor.integration` test requires `.env.test` file with `OPENAI_API_KEY` configured.

@@ -17,14 +17,13 @@ import {
 } from './utility';
 import { EventAttributesBuilder } from './eventAttributesBuilder';
 
-export type ResponseHeaders = Record<
-  string,
-  string | number | boolean | undefined
->;
+export type ResponseHeader = string | number | boolean | undefined;
+
+export type ResponseHeaders = Record<string, ResponseHeader>;
 
 export interface ChatCompletionEventDataFactoryOptions {
   request: CreateChatCompletionRequest;
-  responseData: CreateChatCompletionResponse;
+  response: CreateChatCompletionResponse;
   responseTime: number;
   applicationName: string;
   headers: ResponseHeaders;
@@ -47,11 +46,11 @@ export const createChatCompletionEventDataFactory = () => {
     completion_id: string,
     {
       request,
-      responseData,
+      response,
       applicationName,
     }: ChatCompletionEventDataFactoryOptions,
   ): EventData[] => {
-    return getMessages(request, responseData).map<EventData>(
+    return getMessages(request, response).map<EventData>(
       (message, sequence) => ({
         eventType: 'LlmChatCompletionMessage',
         attributes: {
@@ -72,42 +71,40 @@ export const createChatCompletionEventDataFactory = () => {
     id: string,
     {
       request,
-      responseData,
+      response,
       responseTime: response_time,
       headers,
       openAiConfiguration,
       applicationName,
     }: ChatCompletionEventDataFactoryOptions,
   ): EventData => {
-    const { choices } = responseData;
+    const { choices } = response;
 
     const initialAttributes: ChatCompletionSummaryAttributes = {
       id,
       response_time,
       applicationName,
+      'request.model': request.model,
+      'response.model': response.model,
       timestamp: Date.now(),
-      number_of_messages: getMessages(request, responseData).length,
+      number_of_messages: getMessages(request, response).length,
       vendor: 'openAI',
-      finish_reason: choices
-        ? choices[choices.length - 1].finish_reason
-        : undefined,
-      ratelimit_limit_requests: headers['x-ratelimit-limit-requests'],
-      ratelimit_limit_tokens: headers['x-ratelimit-limit-tokens'],
-      ratelimit_reset_tokens: headers['x-ratelimit-reset-tokens'],
-      ratelimit_reset_requests: headers['x-ratelimit-reset-requests'],
-      ratelimit_remaining_tokens: headers['x-ratelimit-remaining-tokens'],
-      ratelimit_remaining_requests: headers['x-ratelimit-remaining-requests'],
+      finish_reason: choices?.[choices.length - 1].finish_reason,
       organization: headers['openai-organization'],
       api_version: headers['openai-version'],
       api_key_last_four_digits: isString(openAiConfiguration?.apiKey)
         ? `sk-${openAiConfiguration?.apiKey.slice(-4)}`
         : undefined,
+      ...getRateLimitHeaders(headers),
     };
 
     const attributes = new EventAttributesBuilder({
       initialAttributes:
         removeUndefinedValues<EventAttributes>(initialAttributes),
       specialTreatments: {
+        model: {
+          skip: true,
+        },
         choices: {
           skip: true,
         },
@@ -119,7 +116,7 @@ export const createChatCompletionEventDataFactory = () => {
         },
       },
     })
-      .addObjectAttributes(responseData)
+      .addObjectAttributes(response)
       .addObjectAttributes(request)
       .getAttributes();
 
@@ -137,6 +134,30 @@ export const createChatCompletionEventDataFactory = () => {
       ...request.messages,
       ...response.choices.map(({ message }) => message),
     ].filter(filterUndefinedValues);
+  };
+
+  const getRateLimitHeaders = (headers: ResponseHeaders) => {
+    return {
+      ratelimit_reset_tokens: headers['x-ratelimit-reset-tokens'] as string,
+      ratelimit_reset_requests: headers['x-ratelimit-reset-requests'] as string,
+      ratelimit_limit_requests: getHeaderNumber(
+        headers['x-ratelimit-limit-requests'],
+      ),
+      ratelimit_limit_tokens: getHeaderNumber(
+        headers['x-ratelimit-limit-tokens'],
+      ),
+      ratelimit_remaining_tokens: getHeaderNumber(
+        headers['x-ratelimit-remaining-tokens'],
+      ),
+      ratelimit_remaining_requests: getHeaderNumber(
+        headers['x-ratelimit-remaining-requests'],
+      ),
+    };
+  };
+
+  const getHeaderNumber = (header: ResponseHeader): number | undefined => {
+    const headerNumber = Number(header);
+    return !isNaN(headerNumber) ? headerNumber : undefined;
   };
 
   return {
