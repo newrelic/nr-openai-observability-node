@@ -45,26 +45,31 @@ export const monitorOpenAI = (
   ): OpenAIApi['createChatCompletion'] => {
     return async (...args: Parameters<OpenAIApi['createChatCompletion']>) => {
       const { getDuration } = startTimer();
-      const response = await createChatCompletion(...args);
-
+      let response
       try {
-        const responseTime = getDuration();
-
-        const eventDataList =
-          chatCompletionEventDataFactory.createEventDataList({
-            request: args[0],
-            response: response.data,
-            applicationName,
-            responseTime,
-            headers: response.headers,
-            openAiConfiguration: openAIApi['configuration'],
-          });
-
-        eventClient.send(...eventDataList);
+        response = await createChatCompletion(...args);
       } catch (error: any) {
-        console.error(error);
-      }
+        response = { ...error, isError: true }
+        throw (error)
+      } finally {
+        try {
+          const responseTime = getDuration();
+          const eventDataList =
+            chatCompletionEventDataFactory.createEventDataList({
+              request: args[0],
+              response: response?.data,
+              applicationName,
+              responseTime,
+              headers: response?.headers,
+              error: response?.isError ? response : '',
+              openAiConfiguration: openAIApi['configuration'],
+            });
 
+          eventClient.send(...eventDataList);
+        } catch (error: any) {
+          console.error(error);
+        }
+      }
       return response;
     };
   };

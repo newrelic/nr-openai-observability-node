@@ -42,6 +42,11 @@ export interface ChatCompletionSummaryAttributes {
   ratelimit_limit_tokens?: number;
   ratelimit_remaining_tokens?: number;
   ratelimit_remaining_requests?: number;
+  error_status?: string
+  error_message?: string
+  error_type?: string
+  error_code?: string
+  error_param?: string
 }
 
 export type EventData = { eventType: EventType; attributes: EventAttributes };
