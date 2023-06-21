@@ -25,13 +25,14 @@ export class EventAttributesBuilder {
     return this.currentAttributes;
   }
 
-  addObjectAttributes(object: object, keyPrefix = ''): this {
-    Object.entries(object).forEach(([key, value]) => {
+  addObjectAttributes(object = {}, keyPrefix = ''): this {
+    Object.entries(object || {}).forEach(([key, value]) => {
       this.addAttributes(value, `${keyPrefix}${key}`);
     }, {});
 
     return this;
   }
+
 
   private addArrayAttributes(array: any[], keyPrefix: string): this {
     array.forEach((value, index) => {

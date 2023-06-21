@@ -1,9 +1,9 @@
-import { OpenAIApi } from 'openai';
-
+import { OpenAIApi, CreateChatCompletionResponse } from 'openai';
 import { createEventClient, EventClientOptions } from './eventsClient';
 import { createChatCompletionEventDataFactory } from './chatCompletionEventDataFactory';
 import { createCompletionEventDataFactory } from './completionEventDataFactory';
-
+import { CreateChatCompletionError } from './eventTypes'
+import { AxiosResponse } from 'axios';
 export interface MonitorOpenAIOptions extends EventClientOptions {
   applicationName: string;
 }
@@ -45,26 +45,32 @@ export const monitorOpenAI = (
   ): OpenAIApi['createChatCompletion'] => {
     return async (...args: Parameters<OpenAIApi['createChatCompletion']>) => {
       const { getDuration } = startTimer();
-      const response = await createChatCompletion(...args);
-
+      let response: AxiosResponse<CreateChatCompletionResponse> | undefined;
+      let errorResponse: CreateChatCompletionError | undefined
       try {
-        const responseTime = getDuration();
-
-        const eventDataList =
-          chatCompletionEventDataFactory.createEventDataList({
-            request: args[0],
-            response: response.data,
-            applicationName,
-            responseTime,
-            headers: response.headers,
-            openAiConfiguration: openAIApi['configuration'],
-          });
-
-        eventClient.send(...eventDataList);
+        response = await createChatCompletion(...args)
       } catch (error: any) {
-        console.error(error);
-      }
+        errorResponse = error
+        throw (error)
+      } finally {
+        try {
+          const responseTime = getDuration();
+          const eventDataList =
+            chatCompletionEventDataFactory.createEventDataList({
+              request: args[0],
+              response: response?.data,
+              applicationName,
+              responseTime,
+              headers: response?.headers,
+              error: errorResponse,
+              openAiConfiguration: openAIApi['configuration'],
+            });
 
+          eventClient.send(...eventDataList);
+        } catch (error: any) {
+          console.error(error);
+        }
+      }
       return response;
     };
   };

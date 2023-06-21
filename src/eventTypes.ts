@@ -18,11 +18,29 @@ export interface ChatCompletionMessageAttributes {
   vendor: 'openAI';
 }
 
+interface ErrorResponse {
+  status: string;
+  data: ErrorResponseData
+}
+interface ErrorResponseData {
+  status: string
+  error: {
+    message: string
+    type: string
+    code: string
+    param: any
+  }
+}
+export interface CreateChatCompletionError {
+  response?: ErrorResponse
+  message?: string
+}
+
 export interface ChatCompletionSummaryAttributes {
   id: string;
   applicationName: string;
   'request.model': string;
-  'response.model': string;
+  'response.model'?: string;
   response_time: number;
   timestamp: number;
   total_tokens?: number;
@@ -42,6 +60,11 @@ export interface ChatCompletionSummaryAttributes {
   ratelimit_limit_tokens?: number;
   ratelimit_remaining_tokens?: number;
   ratelimit_remaining_requests?: number;
+  error_status?: string
+  error_message?: string
+  error_type?: string
+  error_code?: string
+  error_param?: string
 }
 
 export type EventData = { eventType: EventType; attributes: EventAttributes };
