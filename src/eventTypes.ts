@@ -17,12 +17,29 @@ export interface ChatCompletionMessageAttributes {
   model: string;
   vendor: 'openAI';
 }
+interface errorResponse {
+  status: string;
+  data: errorResponseData
+}
+interface errorResponseData {
+  status: string
+  error: {
+    message: string
+    type: string
+    code: string
+    param: any
+  }
+}
+export interface CreateChatCompletionError {
+  response?: errorResponse
+  message?: string
+}
 
 export interface ChatCompletionSummaryAttributes {
   id: string;
   applicationName: string;
   'request.model': string;
-  'response.model': string;
+  'response.model'?: string;
   response_time: number;
   timestamp: number;
   total_tokens?: number;

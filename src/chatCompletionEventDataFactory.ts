@@ -9,6 +9,7 @@ import {
   ChatCompletionSummaryAttributes,
   EventAttributes,
   EventData,
+  CreateChatCompletionError
 } from './eventTypes';
 import {
   filterUndefinedValues,
@@ -23,12 +24,12 @@ export type ResponseHeaders = Record<string, ResponseHeader>;
 
 export interface ChatCompletionEventDataFactoryOptions {
   request: CreateChatCompletionRequest;
-  response: CreateChatCompletionResponse;
+  response?: CreateChatCompletionResponse;
   responseTime: number;
   applicationName: string;
-  headers: ResponseHeaders;
+  headers?: ResponseHeaders;
   openAiConfiguration?: Configuration;
-  error?: any;
+  error?: CreateChatCompletionError;
 }
 
 export const createChatCompletionEventDataFactory = () => {
@@ -59,7 +60,7 @@ export const createChatCompletionEventDataFactory = () => {
           applicationName,
           sequence,
           completion_id,
-          content: message.content,
+          content: message.content ?? '',
           role: message.role,
           model: request.model,
           vendor: 'openAI',
@@ -92,7 +93,7 @@ export const createChatCompletionEventDataFactory = () => {
       number_of_messages: getMessages(request, response).length,
       vendor: 'openAI',
       error_status: error?.response?.status,
-      error_message: error.response ? error?.response?.data?.error?.message : error.message,
+      error_message: error?.response ? error?.response?.data?.error?.message : error?.message,
       error_type: error?.response?.data?.error?.type,
       error_code: error?.response?.data?.error?.code,
       error_param: error?.response?.data?.error?.param,
@@ -135,7 +136,7 @@ export const createChatCompletionEventDataFactory = () => {
 
   const getMessages = (
     request: CreateChatCompletionRequest,
-    response: CreateChatCompletionResponse,
+    response?: CreateChatCompletionResponse,
   ) => {
     if (!response) {
       return [
@@ -143,12 +144,12 @@ export const createChatCompletionEventDataFactory = () => {
       ].filter(filterUndefinedValues).filter((item) => item.content);
     }
     return [
-      ...(request?.messages ?? []),
+      ...(request.messages ?? []),
       ...(response?.choices ?? []).map(({ message }) => message),
     ].filter(filterUndefinedValues);
   };
 
-  const getRateLimitHeaders = (headers: ResponseHeaders) => {
+  const getRateLimitHeaders = (headers?: ResponseHeaders) => {
     if (!headers) {
       return {}
     }
