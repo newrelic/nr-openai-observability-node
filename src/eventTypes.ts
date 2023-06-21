@@ -17,11 +17,12 @@ export interface ChatCompletionMessageAttributes {
   model: string;
   vendor: 'openAI';
 }
-interface errorResponse {
+
+interface ErrorResponse {
   status: string;
-  data: errorResponseData
+  data: ErrorResponseData
 }
-interface errorResponseData {
+interface ErrorResponseData {
   status: string
   error: {
     message: string
@@ -31,7 +32,7 @@ interface errorResponseData {
   }
 }
 export interface CreateChatCompletionError {
-  response?: errorResponse
+  response?: ErrorResponse
   message?: string
 }
 

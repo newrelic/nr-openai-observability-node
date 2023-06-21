@@ -87,7 +87,7 @@ export const createChatCompletionEventDataFactory = () => {
       id,
       response_time,
       applicationName,
-      'request.model': request?.model,
+      'request.model': request.model,
       'response.model': response?.model,
       timestamp: Date.now(),
       number_of_messages: getMessages(request, response).length,
@@ -140,7 +140,7 @@ export const createChatCompletionEventDataFactory = () => {
   ) => {
     if (!response) {
       return [
-        ...(request?.messages ?? []),
+        ...(request.messages ?? []),
       ].filter(filterUndefinedValues).filter((item) => item.content);
     }
     return [

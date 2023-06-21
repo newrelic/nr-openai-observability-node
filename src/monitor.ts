@@ -49,7 +49,6 @@ export const monitorOpenAI = (
       let errorResponse: CreateChatCompletionError | undefined
       try {
         response = await createChatCompletion(...args)
-
       } catch (error: any) {
         errorResponse = error
         throw (error)
@@ -63,7 +62,7 @@ export const monitorOpenAI = (
               applicationName,
               responseTime,
               headers: response?.headers,
-              error: errorResponse ? errorResponse : undefined,
+              error: errorResponse,
               openAiConfiguration: openAIApi['configuration'],
             });
 
