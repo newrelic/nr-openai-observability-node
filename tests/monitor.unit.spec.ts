@@ -3,7 +3,7 @@ import { ChatCompletionRequestMessageRoleEnum, OpenAIApi } from 'openai';
 import { monitorOpenAI } from '../src';
 import {
   getSentEvent,
-  sendEventsMock,
+  sendEventMock,
 } from './__mocks__/@newrelic/telemetry-sdk';
 
 const model = 'gpt-4';
@@ -27,7 +27,7 @@ describe('monitorOpenAI', () => {
       createChatCompletion: () => {},
     } as unknown as OpenAIApi;
 
-    sendEventsMock.mockClear();
+    sendEventMock.mockClear();
   });
 
   it('when monitoring createCompletion should send LlmCompletion event', async () => {

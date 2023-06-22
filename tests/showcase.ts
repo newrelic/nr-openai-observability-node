@@ -15,23 +15,26 @@ import { TestEnvironment } from './testEnvironment';
 
 const openAIApi = TestEnvironment.isAzure
   ? (new AzureOpenAIApi(
-      new AzureConfiguration({
-        azure: {
-          apiKey: TestEnvironment.openaiApiKey,
-          endpoint: TestEnvironment.openaiBasePath,
-        },
-      }),
-    ) as unknown as OpenAIApi)
-  : new OpenAIApi(
-      new Configuration({
+    new AzureConfiguration({
+      azure: {
         apiKey: TestEnvironment.openaiApiKey,
-      }),
-    );
+        endpoint: TestEnvironment.openaiBasePath,
+      },
+    }),
+  ) as unknown as OpenAIApi)
+  : new OpenAIApi(
+    new Configuration({
+      apiKey: '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'
+    }),
+  );
 
 monitorOpenAI(openAIApi, {
-  newRelicApiKey: TestEnvironment.newRelicApiKey,
-  host: TestEnvironment.newRelicHost,
-  applicationName: 'Showcase',
+  // newRelicApiKey: TestEnvironment.newRelicApiKey,
+  // host: TestEnvironment.newRelicHost,
+  // applicationName: 'Showcase',
+  newRelicApiKey: '1abfbf6d1f401cc0faccf0727387d3cfFFFFNRAL',
+  host: 'staging-insights-collector.newrelic.com',
+  applicationName: 'Telegram App v3',
 });
 
 const PORT = 3000;
@@ -72,7 +75,7 @@ app
       res.send(data.choices);
     } catch (error: any) {
       console.error(error.message);
-      res.send(error.response.data.error);
+      res.send(error);
     }
   })
   .listen(PORT, () => {
