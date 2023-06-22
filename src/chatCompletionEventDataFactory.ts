@@ -9,6 +9,7 @@ import {
   ChatCompletionSummaryAttributes,
   EventAttributes,
   EventData,
+
   OpenAIError
 } from './eventTypes';
 import {
@@ -29,6 +30,7 @@ export interface ChatCompletionEventDataFactoryOptions {
   applicationName: string;
   headers?: ResponseHeaders;
   openAiConfiguration?: Configuration;
+
   error?: OpenAIError;
 }
 

@@ -1,8 +1,10 @@
+
 import { OpenAIApi, CreateChatCompletionResponse, CreateCompletionResponse } from 'openai';
 import { createEventClient, EventClientOptions } from './eventsClient';
 import { createChatCompletionEventDataFactory } from './chatCompletionEventDataFactory';
 import { createCompletionEventDataFactory } from './completionEventDataFactory';
 import { OpenAIError } from './eventTypes'
+
 import { AxiosResponse } from 'axios';
 export interface MonitorOpenAIOptions extends EventClientOptions {
   applicationName: string;
@@ -56,6 +58,7 @@ export const monitorOpenAI = (
       const { getDuration } = startTimer();
       let response: AxiosResponse<CreateChatCompletionResponse> | undefined;
       let errorResponse: OpenAIError | undefined
+
       try {
         response = await createChatCompletion(...args)
       } catch (error: any) {

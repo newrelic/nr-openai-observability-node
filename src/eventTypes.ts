@@ -31,6 +31,7 @@ interface ErrorResponseData {
     param: any
   }
 }
+
 export interface OpenAIError {
   response?: ErrorResponse
   message?: string
