@@ -28,6 +28,7 @@ export const monitorOpenAI = (
         response = await createCompletion(...args);
 
       } catch (error: any) {
+        console.error(error);
         errorResponse = error
         throw (error)
       } finally {
