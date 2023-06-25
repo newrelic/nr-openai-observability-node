@@ -9,7 +9,8 @@ import {
   ChatCompletionSummaryAttributes,
   EventAttributes,
   EventData,
-  CreateChatCompletionError
+
+  OpenAIError
 } from './eventTypes';
 import {
   filterUndefinedValues,
@@ -29,7 +30,8 @@ export interface ChatCompletionEventDataFactoryOptions {
   applicationName: string;
   headers?: ResponseHeaders;
   openAiConfiguration?: Configuration;
-  error?: CreateChatCompletionError;
+
+  error?: OpenAIError;
 }
 
 export const createChatCompletionEventDataFactory = () => {

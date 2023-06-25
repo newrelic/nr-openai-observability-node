@@ -1,8 +1,10 @@
-import { OpenAIApi, CreateChatCompletionResponse } from 'openai';
+
+import { OpenAIApi, CreateChatCompletionResponse, CreateCompletionResponse } from 'openai';
 import { createEventClient, EventClientOptions } from './eventsClient';
 import { createChatCompletionEventDataFactory } from './chatCompletionEventDataFactory';
 import { createCompletionEventDataFactory } from './completionEventDataFactory';
-import { CreateChatCompletionError } from './eventTypes'
+import { OpenAIError } from './eventTypes'
+
 import { AxiosResponse } from 'axios';
 export interface MonitorOpenAIOptions extends EventClientOptions {
   applicationName: string;
@@ -22,18 +24,27 @@ export const monitorOpenAI = (
   ): OpenAIApi['createCompletion'] => {
     return async (...args: Parameters<OpenAIApi['createCompletion']>) => {
       const { getDuration } = startTimer();
-      const response = await createCompletion(...args);
-
+      let response: AxiosResponse<CreateCompletionResponse> | undefined;
+      let errorResponse: OpenAIError | undefined
       try {
-        const eventData = completionEventDataFactory.createEventData({
-          request: args[0],
-          response: response.data,
-          applicationName,
-          responseTime: getDuration(),
-        });
-        eventClient.send(eventData);
+        response = await createCompletion(...args);
+
       } catch (error: any) {
-        console.error(error);
+        errorResponse = error
+        throw (error)
+      } finally {
+        try {
+          const eventData = completionEventDataFactory.createEventData({
+            request: args[0],
+            response: response?.data,
+            applicationName,
+            responseTime: getDuration(),
+            error: errorResponse
+          });
+          eventClient.send(eventData);
+        } catch (error: any) {
+          console.error(error);
+        }
       }
 
       return response;
@@ -46,7 +57,8 @@ export const monitorOpenAI = (
     return async (...args: Parameters<OpenAIApi['createChatCompletion']>) => {
       const { getDuration } = startTimer();
       let response: AxiosResponse<CreateChatCompletionResponse> | undefined;
-      let errorResponse: CreateChatCompletionError | undefined
+      let errorResponse: OpenAIError | undefined
+
       try {
         response = await createChatCompletion(...args)
       } catch (error: any) {

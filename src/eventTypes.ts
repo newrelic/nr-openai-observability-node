@@ -31,7 +31,8 @@ interface ErrorResponseData {
     param: any
   }
 }
-export interface CreateChatCompletionError {
+
+export interface OpenAIError {
   response?: ErrorResponse
   message?: string
 }

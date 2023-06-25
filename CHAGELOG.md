@@ -37,3 +37,9 @@
 - Updated `LlmChatCompletionSummary` attributes.
 
 - Updated README.
+
+### v1.0.8
+
+- Adds Error monitoring.
+
+- Updated README.
