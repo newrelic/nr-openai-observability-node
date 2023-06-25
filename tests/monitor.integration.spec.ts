@@ -61,23 +61,20 @@ describe('monitorOpenAI', () => {
   describe('when monitoring createChatCompletion', () => {
     const model = 'gpt-4';
     const temperature = 1;
+    const messages = [
+      {
+        role: ChatCompletionRequestMessageRoleEnum.User,
+        content: question,
+      },
+    ];
 
-    beforeEach(async () => {
-      const messages = [
-        {
-          role: ChatCompletionRequestMessageRoleEnum.User,
-          content: question,
-        },
-      ];
-
+    it('should send LlmChatCompletionMessage events', async () => {
       await openAIApi.createChatCompletion({
         messages,
         model,
         temperature,
       });
-    });
 
-    it('should send LlmChatCompletionMessage events', async () => {
       expect(getSentEvent(0)).toEqual({
         eventType: 'LlmChatCompletionMessage',
         attributes: {
@@ -91,7 +88,6 @@ describe('monitorOpenAI', () => {
           vendor: 'openAI',
         },
       });
-
       expect(getSentEvent(1)).toEqual({
         eventType: 'LlmChatCompletionMessage',
         attributes: {
@@ -108,6 +104,12 @@ describe('monitorOpenAI', () => {
     });
 
     it('should send LlmChatCompletionSummary event', async () => {
+      await openAIApi.createChatCompletion({
+        messages,
+        model,
+        temperature,
+      });
+
       expect(getSentEvent(2)).toEqual({
         eventType: 'LlmChatCompletionSummary',
         attributes: {
@@ -123,7 +125,7 @@ describe('monitorOpenAI', () => {
           response_time: expect.any(Number),
           number_of_messages: 2,
           object: 'chat.completion',
-          api_key_last_four_digits: 'sk-8VS9',
+          api_key_last_four_digits: 'sk-k9M5',
           'usage.prompt_tokens': 11,
           'usage.total_tokens': expect.any(Number),
           'usage.completion_tokens': expect.any(Number),
@@ -137,6 +139,48 @@ describe('monitorOpenAI', () => {
           api_version: '2020-10-01',
         },
       });
+    });
+
+    it('should send LlmChatCompletionSummary event with error parameters ', async () => {
+      const apiKey = 'BAD_KEY';
+      openAIApi = new OpenAIApi(
+        new Configuration({
+          apiKey,
+        }),
+      );
+      monitorOpenAI(openAIApi, {
+        applicationName,
+        newRelicApiKey: TestEnvironment.newRelicApiKey,
+        host: TestEnvironment.newRelicHost,
+      });
+
+      try {
+        await openAIApi.createChatCompletion({
+          messages,
+          model,
+          temperature,
+        });
+      } catch (error: any) {
+        expect(getSentEvent(1)).toEqual({
+          eventType: 'LlmChatCompletionSummary',
+          attributes: {
+            'request.model': model,
+            temperature,
+            applicationName,
+            id: expect.any(String),
+            timestamp: expect.any(Number),
+            vendor: 'openAI',
+            response_time: expect.any(Number),
+            number_of_messages: 1,
+            api_key_last_four_digits: 'sk-_KEY',
+            error_code: 'invalid_api_key',
+            error_message:
+              'Incorrect API key provided: BAD_KEY. You can find your API key at https://platform.openai.com/account/api-keys.',
+            error_status: 401,
+            error_type: 'invalid_request_error',
+          },
+        });
+      }
     });
   });
 });

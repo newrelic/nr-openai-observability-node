@@ -2,28 +2,25 @@ import { CreateCompletionRequest, CreateCompletionResponse } from 'openai';
 import { EventData, OpenAIError } from './eventTypes';
 import { EventAttributesBuilder } from './eventAttributesBuilder';
 
+export interface CompletionFactoryOptions {
+  applicationName: string;
+}
+
 export interface ChatCompletionEventDataFactoryOptions {
   request: CreateCompletionRequest;
   response?: CreateCompletionResponse;
   responseTime: number;
-  applicationName: string;
-  error?: OpenAIError
+  error?: OpenAIError;
 }
 
-
-const parseError = (error?: OpenAIError) => {
-  if (!error) {
-    return
-  }
-  return { error_type: error?.response?.data.error.type, error_status: error?.response?.status, error_message: error?.message, error_code: error?.response?.data.error.code }
-}
-export const createCompletionEventDataFactory = () => {
+export const createCompletionEventDataFactory = ({
+  applicationName,
+}: CompletionFactoryOptions) => {
   const createEventData = ({
     request,
     response,
-    applicationName,
     responseTime: response_time,
-    error
+    error,
   }: ChatCompletionEventDataFactoryOptions): EventData => {
     const attributes = new EventAttributesBuilder({
       initialAttributes: { response_time, applicationName },
@@ -32,11 +29,26 @@ export const createCompletionEventDataFactory = () => {
           parseValue: (value) => JSON.stringify(value),
         },
       },
-    }).addObjectAttributes(request)
-      .addObjectAttributes(response).addObjectAttributes(parseError(error))
+    })
+      .addObjectAttributes(request)
+      .addObjectAttributes(response)
+      .addObjectAttributes(parseError(error))
       .getAttributes();
 
     return { eventType: 'LlmCompletion', attributes };
+  };
+
+  const parseError = (error?: OpenAIError) => {
+    if (!error) {
+      return;
+    }
+
+    return {
+      error_type: error?.response?.data.error.type,
+      error_status: error?.response?.status,
+      error_message: error?.message,
+      error_code: error?.response?.data.error.code,
+    };
   };
 
   return {

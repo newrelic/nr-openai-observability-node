@@ -9,15 +9,19 @@ import {
   ChatCompletionSummaryAttributes,
   EventAttributes,
   EventData,
-
-  OpenAIError
+  OpenAIError,
 } from './eventTypes';
 import {
   filterUndefinedValues,
   isString,
   removeUndefinedValues,
-} from './utility';
+} from './objectUtility';
 import { EventAttributesBuilder } from './eventAttributesBuilder';
+
+export interface ChatCompletionFactoryOptions {
+  applicationName: string;
+  openAiConfiguration?: Configuration;
+}
 
 export type ResponseHeader = string | number | boolean | undefined;
 
@@ -27,14 +31,14 @@ export interface ChatCompletionEventDataFactoryOptions {
   request: CreateChatCompletionRequest;
   response?: CreateChatCompletionResponse;
   responseTime: number;
-  applicationName: string;
   headers?: ResponseHeaders;
-  openAiConfiguration?: Configuration;
-
   error?: OpenAIError;
 }
 
-export const createChatCompletionEventDataFactory = () => {
+export const createChatCompletionEventDataFactory = ({
+  applicationName,
+  openAiConfiguration,
+}: ChatCompletionFactoryOptions) => {
   const createEventDataList = (
     options: ChatCompletionEventDataFactoryOptions,
   ): EventData[] => {
@@ -48,11 +52,7 @@ export const createChatCompletionEventDataFactory = () => {
 
   const createMessageEventDataList = (
     completion_id: string,
-    {
-      request,
-      response,
-      applicationName,
-    }: ChatCompletionEventDataFactoryOptions,
+    { request, response }: ChatCompletionEventDataFactoryOptions,
   ): EventData[] => {
     return getMessages(request, response).map<EventData>(
       (message, sequence) => ({
@@ -78,28 +78,28 @@ export const createChatCompletionEventDataFactory = () => {
       response,
       responseTime: response_time,
       headers,
-      openAiConfiguration,
-      applicationName,
-      error
+      error,
     }: ChatCompletionEventDataFactoryOptions,
   ): EventData => {
     const { choices } = response || {};
 
     const initialAttributes: ChatCompletionSummaryAttributes = {
+      finish_reason: choices?.[choices.length - 1].finish_reason,
+      number_of_messages: getMessages(request, response).length,
       id,
       response_time,
       applicationName,
       'request.model': request.model,
       'response.model': response?.model,
       timestamp: Date.now(),
-      number_of_messages: getMessages(request, response).length,
       vendor: 'openAI',
       error_status: error?.response?.status,
-      error_message: error?.response ? error?.response?.data?.error?.message : error?.message,
+      error_message: error?.response
+        ? error?.response?.data?.error?.message
+        : error?.message,
       error_type: error?.response?.data?.error?.type,
       error_code: error?.response?.data?.error?.code,
       error_param: error?.response?.data?.error?.param,
-      finish_reason: choices?.[choices.length - 1].finish_reason,
       organization: headers?.['openai-organization'],
       api_version: headers?.['openai-version'],
       api_key_last_four_digits: isString(openAiConfiguration?.apiKey)
@@ -141,9 +141,9 @@ export const createChatCompletionEventDataFactory = () => {
     response?: CreateChatCompletionResponse,
   ) => {
     if (!response) {
-      return [
-        ...(request.messages ?? []),
-      ].filter(filterUndefinedValues).filter((item) => item.content);
+      return [...(request.messages ?? [])]
+        .filter(filterUndefinedValues)
+        .filter((item) => item.content);
     }
     return [
       ...(request.messages ?? []),
@@ -153,7 +153,7 @@ export const createChatCompletionEventDataFactory = () => {
 
   const getRateLimitHeaders = (headers?: ResponseHeaders) => {
     if (!headers) {
-      return {}
+      return {};
     }
     return {
       ratelimit_reset_tokens: headers['x-ratelimit-reset-tokens'] as string,
