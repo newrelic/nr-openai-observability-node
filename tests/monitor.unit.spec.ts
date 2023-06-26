@@ -25,6 +25,7 @@ describe('monitorOpenAI', () => {
     openai = {
       createCompletion: () => {},
       createChatCompletion: () => {},
+      createEmbedding: () => {},
     } as unknown as OpenAIApi;
 
     sendEventMock.mockClear();

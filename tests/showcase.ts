@@ -75,6 +75,19 @@ app
       res.send(error.response.data.error);
     }
   })
+  .post('/createEmbedding', async (req, res) => {
+    try {
+      const { input } = req.body;
+      const { data } = await openAIApi.createEmbedding({
+        model: 'text-embedding-ada-002',
+        input,
+      });
+      res.send(data);
+    } catch (error: any) {
+      console.error(error.message);
+      res.send(error.response.data.error);
+    }
+  })
   .listen(PORT, () => {
     console.log(`API listening on http://localhost:${PORT}`);
   });

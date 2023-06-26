@@ -1,5 +1,5 @@
-import { EventAttributes } from './eventTypes';
-import { isNull, isObject } from './utility';
+import { EventAttributes } from '../eventTypes';
+import { isNull, isObject } from './objectUtility';
 
 export type AttributeKeySpecialTreatments = Record<
   string,
@@ -32,7 +32,6 @@ export class EventAttributesBuilder {
 
     return this;
   }
-
 
   private addArrayAttributes(array: any[], keyPrefix: string): this {
     array.forEach((value, index) => {

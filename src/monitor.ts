@@ -1,11 +1,12 @@
-
-import { OpenAIApi, CreateChatCompletionResponse, CreateCompletionResponse } from 'openai';
+import { OpenAIApi } from 'openai';
 import { createEventClient, EventClientOptions } from './eventsClient';
-import { createChatCompletionEventDataFactory } from './chatCompletionEventDataFactory';
-import { createCompletionEventDataFactory } from './completionEventDataFactory';
-import { OpenAIError } from './eventTypes'
+import { OpenAIError } from './eventTypes';
+import {
+  ChatCompletionEventDataFactory,
+  CompletionEventDataFactory,
+  EmbeddingEventDataFactory,
+} from './eventDataFactory';
 
-import { AxiosResponse } from 'axios';
 export interface MonitorOpenAIOptions extends EventClientOptions {
   applicationName: string;
 }
@@ -14,77 +15,113 @@ export const monitorOpenAI = (
   openAIApi: OpenAIApi,
   options: MonitorOpenAIOptions,
 ) => {
-  const eventClient = createEventClient(options);
-  const chatCompletionEventDataFactory = createChatCompletionEventDataFactory();
-  const completionEventDataFactory = createCompletionEventDataFactory();
   const { applicationName } = options;
+  const openAiConfiguration = openAIApi['configuration'];
+
+  const eventClient = createEventClient(options);
+  const chatCompletionEventDataFactory = new ChatCompletionEventDataFactory({
+    applicationName,
+    openAiConfiguration,
+  });
+  const embeddingEventDataFactory = new EmbeddingEventDataFactory({
+    applicationName,
+    openAiConfiguration,
+  });
+  const completionEventDataFactory = new CompletionEventDataFactory({
+    applicationName,
+  });
 
   const patchCompletion = (
     createCompletion: OpenAIApi['createCompletion'],
   ): OpenAIApi['createCompletion'] => {
-    return async (...args: Parameters<OpenAIApi['createCompletion']>) => {
-      const { getDuration } = startTimer();
-      let response: AxiosResponse<CreateCompletionResponse> | undefined;
-      let errorResponse: OpenAIError | undefined
-      try {
-        response = await createCompletion(...args);
-
-      } catch (error: any) {
-        errorResponse = error
-        throw (error)
-      } finally {
-        try {
+    return async (
+      ...[request, options]: Parameters<OpenAIApi['createCompletion']>
+    ) => {
+      return monitorResponse(
+        () => createCompletion(request, options),
+        ({ response, responseError, getDuration }) => {
           const eventData = completionEventDataFactory.createEventData({
-            request: args[0],
-            response: response?.data,
-            applicationName,
+            request,
+            responseData: response?.data,
             responseTime: getDuration(),
-            error: errorResponse
+            responseError,
           });
           eventClient.send(eventData);
-        } catch (error: any) {
-          console.error(error);
-        }
-      }
-
-      return response;
+        },
+      );
     };
   };
 
   const patchChatCompletion = (
     createChatCompletion: OpenAIApi['createChatCompletion'],
   ): OpenAIApi['createChatCompletion'] => {
-    return async (...args: Parameters<OpenAIApi['createChatCompletion']>) => {
-      const { getDuration } = startTimer();
-      let response: AxiosResponse<CreateChatCompletionResponse> | undefined;
-      let errorResponse: OpenAIError | undefined
-
-      try {
-        response = await createChatCompletion(...args)
-      } catch (error: any) {
-        errorResponse = error
-        throw (error)
-      } finally {
-        try {
-          const responseTime = getDuration();
+    return async (
+      ...[request, options]: Parameters<OpenAIApi['createChatCompletion']>
+    ) => {
+      return monitorResponse(
+        () => createChatCompletion(request, options),
+        ({ response, responseError, getDuration }) => {
           const eventDataList =
             chatCompletionEventDataFactory.createEventDataList({
-              request: args[0],
-              response: response?.data,
-              applicationName,
-              responseTime,
-              headers: response?.headers,
-              error: errorResponse,
-              openAiConfiguration: openAIApi['configuration'],
+              request,
+              responseData: response?.data,
+              responseTime: getDuration(),
+              responseHeaders: response?.headers,
+              responseError,
             });
-
           eventClient.send(...eventDataList);
-        } catch (error: any) {
-          console.error(error);
-        }
+        },
+      );
+    };
+  };
+
+  const patchEmbedding = (
+    createEmbedding: OpenAIApi['createEmbedding'],
+  ): OpenAIApi['createEmbedding'] => {
+    return async (
+      ...[request, options]: Parameters<OpenAIApi['createEmbedding']>
+    ) => {
+      return monitorResponse(
+        () => createEmbedding(request, options),
+        ({ response, responseError, getDuration }) => {
+          const eventData = embeddingEventDataFactory.createEventData({
+            request,
+            responseData: response?.data,
+            responseTime: getDuration(),
+            responseHeaders: response?.headers,
+            responseError,
+          });
+          eventClient.send(eventData);
+        },
+      );
+    };
+  };
+
+  const monitorResponse = async <TResponse>(
+    call: () => Promise<TResponse>,
+    onResponse: (options: {
+      response?: TResponse;
+      responseError?: OpenAIError;
+      getDuration: () => number;
+    }) => void,
+  ): Promise<TResponse> => {
+    const { getDuration } = startTimer();
+    try {
+      const response = await call();
+      try {
+        onResponse({ response, getDuration });
+      } catch (error: any) {
+        console.error(error);
       }
       return response;
-    };
+    } catch (responseError: any) {
+      try {
+        onResponse({ responseError, getDuration });
+      } catch (error) {
+        console.error(error);
+      }
+      throw responseError;
+    }
   };
 
   const startTimer = () => {
@@ -100,5 +137,8 @@ export const monitorOpenAI = (
   );
   openAIApi.createChatCompletion = patchChatCompletion(
     openAIApi.createChatCompletion.bind(openAIApi),
+  );
+  openAIApi.createEmbedding = patchEmbedding(
+    openAIApi.createEmbedding.bind(openAIApi),
   );
 };

@@ -38,8 +38,12 @@
 
 - Updated README.
 
-### v1.0.8
+### v1.0.9
 
 - Adds Error monitoring.
 
 - Updated README.
+
+### v1.0.10
+
+- Sends `LlmEmbedding` event when calling OpenAI `createEmbedding`.
