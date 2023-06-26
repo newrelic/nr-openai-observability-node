@@ -6,7 +6,7 @@ import { removeUndefinedValues } from './objectUtility';
 import {
   CommonSummaryAttributesFactoryOptions,
   ResponseHeaders,
-  createCommonSummaryAttributesFactory,
+  CommonSummaryAttributesFactory,
 } from './commonSummaryAttributesFactory';
 
 export interface EmbeddingEventDataFactoryOptions {
@@ -17,19 +17,19 @@ export interface EmbeddingEventDataFactoryOptions {
   responseError?: OpenAIError;
 }
 
-export const createEmbeddingEventDataFactory = ({
-  applicationName,
-  openAiConfiguration,
-}: CommonSummaryAttributesFactoryOptions) => {
-  const commonSummaryAttributesFactory = createCommonSummaryAttributesFactory({
-    applicationName,
-    openAiConfiguration,
-  });
+export class EmbeddingEventDataFactory {
+  private readonly commonSummaryAttributesFactory: CommonSummaryAttributesFactory;
 
-  const createEventData = ({
+  constructor(options: CommonSummaryAttributesFactoryOptions) {
+    this.commonSummaryAttributesFactory = new CommonSummaryAttributesFactory(
+      options,
+    );
+  }
+
+  createEventData({
     request,
     ...restOptions
-  }: EmbeddingEventDataFactoryOptions): EventData => {
+  }: EmbeddingEventDataFactoryOptions): EventData {
     const attributeKeySpecialTreatments = {
       data: {
         skip: true,
@@ -38,7 +38,7 @@ export const createEmbeddingEventDataFactory = ({
 
     const attributes = {
       input: request.input,
-      ...commonSummaryAttributesFactory.createAttributes({
+      ...this.commonSummaryAttributesFactory.createAttributes({
         id: uuid(),
         request,
         attributeKeySpecialTreatments,
@@ -50,9 +50,5 @@ export const createEmbeddingEventDataFactory = ({
       eventType: 'LlmEmbedding',
       attributes: removeUndefinedValues(attributes),
     };
-  };
-
-  return {
-    createEventData,
-  };
-};
+  }
+}

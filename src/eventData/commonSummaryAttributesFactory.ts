@@ -36,11 +36,12 @@ export interface CommonSummaryAttributesOptions {
   attributeKeySpecialTreatments?: AttributeKeySpecialTreatments;
 }
 
-export const createCommonSummaryAttributesFactory = ({
-  applicationName,
-  openAiConfiguration,
-}: CommonSummaryAttributesFactoryOptions) => {
-  const createAttributes = ({
+export class CommonSummaryAttributesFactory {
+  constructor(
+    private readonly options: CommonSummaryAttributesFactoryOptions,
+  ) {}
+
+  createAttributes({
     id,
     request,
     responseData,
@@ -48,7 +49,9 @@ export const createCommonSummaryAttributesFactory = ({
     responseHeaders,
     responseError,
     attributeKeySpecialTreatments,
-  }: CommonSummaryAttributesOptions): EventAttributes => {
+  }: CommonSummaryAttributesOptions): EventAttributes {
+    const { applicationName, openAiConfiguration } = this.options;
+
     const initialAttributes: CommonSummaryAttributes = {
       id,
       response_time,
@@ -69,7 +72,7 @@ export const createCommonSummaryAttributesFactory = ({
       api_key_last_four_digits: isString(openAiConfiguration?.apiKey)
         ? `sk-${openAiConfiguration?.apiKey.slice(-4)}`
         : undefined,
-      ...parseRateLimitHeaders(responseHeaders),
+      ...this.parseRateLimitHeaders(responseHeaders),
     };
 
     const attributes = new EventAttributesBuilder({
@@ -90,36 +93,33 @@ export const createCommonSummaryAttributesFactory = ({
       .getAttributes();
 
     return attributes;
-  };
+  }
 
-  const parseRateLimitHeaders = (headers?: ResponseHeaders) => {
+  private parseRateLimitHeaders(headers?: ResponseHeaders) {
     if (!headers) {
       return {};
     }
+
     return {
       ratelimit_reset_tokens: headers['x-ratelimit-reset-tokens'] as string,
       ratelimit_reset_requests: headers['x-ratelimit-reset-requests'] as string,
-      ratelimit_limit_requests: getHeaderNumber(
+      ratelimit_limit_requests: this.getHeaderNumber(
         headers['x-ratelimit-limit-requests'],
       ),
-      ratelimit_limit_tokens: getHeaderNumber(
+      ratelimit_limit_tokens: this.getHeaderNumber(
         headers['x-ratelimit-limit-tokens'],
       ),
-      ratelimit_remaining_tokens: getHeaderNumber(
+      ratelimit_remaining_tokens: this.getHeaderNumber(
         headers['x-ratelimit-remaining-tokens'],
       ),
-      ratelimit_remaining_requests: getHeaderNumber(
+      ratelimit_remaining_requests: this.getHeaderNumber(
         headers['x-ratelimit-remaining-requests'],
       ),
     };
-  };
+  }
 
-  const getHeaderNumber = (header: ResponseHeader): number | undefined => {
+  private getHeaderNumber(header: ResponseHeader): number | undefined {
     const headerNumber = Number(header);
     return !isNaN(headerNumber) ? headerNumber : undefined;
-  };
-
-  return {
-    createAttributes,
-  };
-};
+  }
+}

@@ -2,9 +2,9 @@ import { OpenAIApi } from 'openai';
 import { createEventClient, EventClientOptions } from './eventsClient';
 import { OpenAIError } from './eventTypes';
 import {
-  createChatCompletionEventDataFactory,
-  createCompletionEventDataFactory,
-  createEmbeddingEventDataFactory,
+  ChatCompletionEventDataFactory,
+  CompletionEventDataFactory,
+  EmbeddingEventDataFactory,
 } from './eventData';
 
 export interface MonitorOpenAIOptions extends EventClientOptions {
@@ -19,15 +19,15 @@ export const monitorOpenAI = (
   const openAiConfiguration = openAIApi['configuration'];
 
   const eventClient = createEventClient(options);
-  const chatCompletionEventDataFactory = createChatCompletionEventDataFactory({
+  const chatCompletionEventDataFactory = new ChatCompletionEventDataFactory({
     applicationName,
     openAiConfiguration,
   });
-  const embeddingEventDataFactory = createEmbeddingEventDataFactory({
+  const embeddingEventDataFactory = new EmbeddingEventDataFactory({
     applicationName,
     openAiConfiguration,
   });
-  const completionEventDataFactory = createCompletionEventDataFactory({
+  const completionEventDataFactory = new CompletionEventDataFactory({
     applicationName,
   });
 

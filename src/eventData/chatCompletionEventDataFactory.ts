@@ -9,7 +9,7 @@ import { filterUndefinedValues, removeUndefinedValues } from './objectUtility';
 import {
   CommonSummaryAttributesFactoryOptions,
   ResponseHeaders,
-  createCommonSummaryAttributesFactory,
+  CommonSummaryAttributesFactory,
 } from './commonSummaryAttributesFactory';
 
 export interface ChatCompletionEventDataFactoryOptions {
@@ -20,55 +20,62 @@ export interface ChatCompletionEventDataFactoryOptions {
   responseError?: OpenAIError;
 }
 
-export const createChatCompletionEventDataFactory = ({
-  applicationName,
-  openAiConfiguration,
-}: CommonSummaryAttributesFactoryOptions) => {
-  const commonSummaryAttributesFactory = createCommonSummaryAttributesFactory({
+export class ChatCompletionEventDataFactory {
+  private readonly applicationName: string;
+  private readonly commonSummaryAttributesFactory: CommonSummaryAttributesFactory;
+
+  constructor({
     applicationName,
     openAiConfiguration,
-  });
+  }: CommonSummaryAttributesFactoryOptions) {
+    this.applicationName = applicationName;
+    this.commonSummaryAttributesFactory = new CommonSummaryAttributesFactory({
+      applicationName,
+      openAiConfiguration,
+    });
+  }
 
-  const createEventDataList = (
+  createEventDataList(
     options: ChatCompletionEventDataFactoryOptions,
-  ): EventData[] => {
+  ): EventData[] {
     const completionId = uuid();
 
-    const messageDataList = createMessageEventDataList(completionId, options);
-    const summaryData = createSummaryEventData(completionId, options);
+    const messageDataList = this.createMessageEventDataList(
+      completionId,
+      options,
+    );
+    const summaryData = this.createSummaryEventData(completionId, options);
 
     return [...messageDataList, summaryData];
-  };
+  }
 
-  const createMessageEventDataList = (
+  private createMessageEventDataList(
     completion_id: string,
     { request, responseData }: ChatCompletionEventDataFactoryOptions,
-  ): EventData[] => {
-    return getMessages(request, responseData).map<EventData>(
-      (message, sequence) => ({
-        eventType: 'LlmChatCompletionMessage',
-        attributes: {
-          id: uuid(),
-          applicationName,
-          sequence,
-          completion_id,
-          content: message.content ?? '',
-          role: message.role,
-          model: request.model,
-          vendor: 'openAI',
-        },
-      }),
-    );
-  };
+  ): EventData[] {
+    return this.getMessages(request, responseData).map((message, sequence) => ({
+      eventType: 'LlmChatCompletionMessage',
+      attributes: {
+        id: uuid(),
+        applicationName: this.applicationName,
+        sequence,
+        completion_id,
+        content: message.content ?? '',
+        role: message.role,
+        model: request.model,
+        vendor: 'openAI',
+      },
+    }));
+  }
 
-  const createSummaryEventData = (
+  private createSummaryEventData(
     id: string,
     {
       request,
       responseData,
       ...restOptions
     }: ChatCompletionEventDataFactoryOptions,
-  ): EventData => {
+  ): EventData {
     const { choices } = responseData || {};
 
     const attributeKeySpecialTreatments = {
@@ -82,8 +89,8 @@ export const createChatCompletionEventDataFactory = ({
 
     const attributes = {
       finish_reason: choices?.[choices.length - 1].finish_reason,
-      number_of_messages: getMessages(request, responseData).length,
-      ...commonSummaryAttributesFactory.createAttributes({
+      number_of_messages: this.getMessages(request, responseData).length,
+      ...this.commonSummaryAttributesFactory.createAttributes({
         id,
         request,
         responseData,
@@ -96,12 +103,12 @@ export const createChatCompletionEventDataFactory = ({
       eventType: 'LlmChatCompletionSummary',
       attributes: removeUndefinedValues(attributes),
     };
-  };
+  }
 
-  const getMessages = (
+  private getMessages(
     request: CreateChatCompletionRequest,
     responseData?: CreateChatCompletionResponse,
-  ) => {
+  ) {
     if (!responseData) {
       return [...(request.messages ?? [])]
         .filter(filterUndefinedValues)
@@ -111,9 +118,5 @@ export const createChatCompletionEventDataFactory = ({
       ...(request.messages ?? []),
       ...(responseData?.choices ?? []).map(({ message }) => message),
     ].filter(filterUndefinedValues);
-  };
-
-  return {
-    createEventDataList,
-  };
-};
+  }
+}

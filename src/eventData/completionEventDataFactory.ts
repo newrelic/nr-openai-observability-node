@@ -13,27 +13,30 @@ export interface CompletionEventDataOptions {
   responseError?: OpenAIError;
 }
 
-export const createCompletionEventDataFactory = ({
-  applicationName,
-}: CompletionFactoryOptions) => {
-  const createEventData = ({
+export class CompletionEventDataFactory {
+  constructor(private readonly options: CompletionFactoryOptions) {}
+
+  createEventData({
     request,
     responseData,
     responseTime: response_time,
     responseError,
-  }: CompletionEventDataOptions): EventData => {
+  }: CompletionEventDataOptions): EventData {
     const attributes = new EventAttributesBuilder({
-      initialAttributes: { response_time, applicationName },
+      initialAttributes: {
+        response_time,
+        applicationName: this.options.applicationName,
+      },
     })
       .addObjectAttributes(request)
       .addObjectAttributes(responseData)
-      .addObjectAttributes(parseError(responseError))
+      .addObjectAttributes(this.parseError(responseError))
       .getAttributes();
 
     return { eventType: 'LlmCompletion', attributes };
-  };
+  }
 
-  const parseError = (responseError?: OpenAIError) => {
+  private parseError(responseError?: OpenAIError) {
     if (!responseError) {
       return;
     }
@@ -44,9 +47,5 @@ export const createCompletionEventDataFactory = ({
       error_message: responseError?.message,
       error_code: responseError?.response?.data.error.code,
     };
-  };
-
-  return {
-    createEventData,
-  };
-};
+  }
+}
