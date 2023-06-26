@@ -5,7 +5,7 @@ import {
   ChatCompletionEventDataFactory,
   CompletionEventDataFactory,
   EmbeddingEventDataFactory,
-} from './eventData';
+} from './eventDataFactory';
 
 export interface MonitorOpenAIOptions extends EventClientOptions {
   applicationName: string;
