@@ -1,4 +1,4 @@
-import { EventAttributes } from './eventTypes';
+import { EventAttributes } from '../eventTypes';
 import { isNull, isObject } from './objectUtility';
 
 export type AttributeKeySpecialTreatments = Record<

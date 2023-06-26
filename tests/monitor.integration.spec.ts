@@ -35,7 +35,7 @@ describe('monitorOpenAI', () => {
     sendEventMock.mockClear();
   });
 
-  it('when monitoring createCompletion should send LlmCompletion event', async () => {
+  it('should send LlmCompletion event when monitoring createCompletion ', async () => {
     const model = 'text-davinci-003';
 
     await openAIApi.createCompletion({
@@ -45,7 +45,7 @@ describe('monitorOpenAI', () => {
 
     expect(getSentEvent(0)).toEqual({
       eventType: 'LlmCompletion',
-      attributes: expect.objectContaining({
+      attributes: {
         model,
         applicationName,
         prompt: question,
@@ -54,7 +54,12 @@ describe('monitorOpenAI', () => {
         'usage.prompt_tokens': 4,
         'usage.total_tokens': 13,
         'choices.0.text': expect.any(String),
-      }),
+        object: 'text_completion',
+        'choices.0.finish_reason': 'stop',
+        'choices.0.index': 0,
+        created: expect.any(Number),
+        id: expect.any(String),
+      },
     });
   });
 
@@ -181,6 +186,38 @@ describe('monitorOpenAI', () => {
           },
         });
       }
+    });
+  });
+
+  it('should send LlmEmbedding event when monitoring createEmbedding ', async () => {
+    const model = 'text-embedding-ada-002';
+
+    await openAIApi.createEmbedding({
+      input: question,
+      model,
+    });
+
+    expect(getSentEvent(0)).toEqual({
+      eventType: 'LlmEmbedding',
+      attributes: {
+        id: expect.any(String),
+        applicationName,
+        input: question,
+        response_time: expect.any(Number),
+        'request.model': 'text-embedding-ada-002',
+        'response.model': 'text-embedding-ada-002-v2',
+        'usage.prompt_tokens': 4,
+        'usage.total_tokens': expect.any(Number),
+        api_key_last_four_digits: 'sk-k9M5',
+        ratelimit_limit_requests: expect.any(Number),
+        ratelimit_remaining_requests: expect.any(Number),
+        ratelimit_reset_requests: expect.any(String),
+        organization: expect.any(String),
+        timestamp: expect.any(Number),
+        vendor: 'openAI',
+        object: 'list',
+        api_version: '2020-10-01',
+      },
     });
   });
 });
