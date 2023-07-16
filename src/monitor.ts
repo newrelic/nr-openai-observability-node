@@ -1,4 +1,6 @@
 import { OpenAIApi } from 'openai';
+import { OpenAI } from "langchain/llms/openai";
+
 import { createEventClient, EventClientOptions } from './eventsClient';
 import { OpenAIError } from './eventTypes';
 import {
@@ -7,17 +9,17 @@ import {
   EmbeddingEventDataFactory,
 } from './eventDataFactory';
 
+
 export interface MonitorOpenAIOptions extends EventClientOptions {
   applicationName: string;
 }
 
 export const monitorOpenAI = (
-  openAIApi: OpenAIApi,
+  openAIApi: any,
   options: MonitorOpenAIOptions,
 ) => {
   const { applicationName } = options;
-  const openAiConfiguration = openAIApi['configuration'];
-
+  const openAiConfiguration = openAIApi['configuration'] || openAIApi['clientConfig'];
   const eventClient = createEventClient(options);
   const chatCompletionEventDataFactory = new ChatCompletionEventDataFactory({
     applicationName,
@@ -132,13 +134,32 @@ export const monitorOpenAI = (
     };
   };
 
-  openAIApi.createCompletion = patchCompletion(
-    openAIApi.createCompletion.bind(openAIApi),
-  );
-  openAIApi.createChatCompletion = patchChatCompletion(
-    openAIApi.createChatCompletion.bind(openAIApi),
-  );
-  openAIApi.createEmbedding = patchEmbedding(
-    openAIApi.createEmbedding.bind(openAIApi),
-  );
+  const createCompletion = OpenAIApi.prototype.createCompletion
+  const createChatCompletion = OpenAIApi.prototype.createChatCompletion
+  const createEmbedding = OpenAIApi.prototype.createEmbedding
+
+  const createCompletionOverRide = function (args: any) {
+    return patchCompletion(
+      //@ts-ignore
+      createCompletion.bind(this, args)
+    )(args)
+  }
+
+  const createChatCompletionOverRide = function (args: any) {
+    return patchChatCompletion(
+      //@ts-ignore
+      createChatCompletion.bind(this, args)
+    )(args)
+  }
+
+  const createEmbeddingOverRide = function (args: any) {
+    return patchEmbedding(
+      //@ts-ignore
+      createEmbedding.bind(this, args)
+    )(args)
+  }
+
+  OpenAIApi.prototype.createEmbedding = createEmbeddingOverRide
+  OpenAIApi.prototype.createCompletion = createCompletionOverRide
+  OpenAIApi.prototype.createChatCompletion = createChatCompletionOverRide
 };

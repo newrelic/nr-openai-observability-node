@@ -15,17 +15,26 @@ const temperature = 1;
 
 const createDelayedResponse =
   (result: any): ((...args: any[]) => Promise<any>) =>
-  () =>
-    new Promise((resolve) => setTimeout(() => resolve(result), 1));
+    () =>
+      new Promise((resolve) => setTimeout(() => resolve(result), 1));
 
 describe('monitorOpenAI', () => {
+  //@ts-ignore
   let openai: OpenAIApi;
 
   beforeEach(() => {
+
+    //@ts-ignore
+    OpenAIApi.prototype.createCompletion = () => { }
+    //@ts-ignore
+    OpenAIApi.prototype.createChatCompletion = () => { }
+    //@ts-ignore
+    OpenAIApi.prototype.createEmbedding = () => { }
+
     openai = {
-      createCompletion: () => {},
-      createChatCompletion: () => {},
-      createEmbedding: () => {},
+      createCompletion: () => { },
+      createChatCompletion: () => { },
+      createEmbedding: () => { },
     } as unknown as OpenAIApi;
 
     sendEventMock.mockClear();
@@ -39,7 +48,7 @@ describe('monitorOpenAI', () => {
     ];
 
     jest
-      .spyOn(openai, 'createCompletion')
+      .spyOn(OpenAIApi.prototype, 'createCompletion')
       .mockImplementation(createDelayedResponse({ data: { choices } }));
 
     monitorOpenAI(openai, {
@@ -47,7 +56,7 @@ describe('monitorOpenAI', () => {
       applicationName,
     });
 
-    await openai.createCompletion({
+    await OpenAIApi.prototype.createCompletion({
       prompt: question,
       model,
     });
@@ -79,7 +88,7 @@ describe('monitorOpenAI', () => {
     const array = [{ key: 'arrayKey' }];
 
     beforeEach(async () => {
-      jest.spyOn(openai, 'createChatCompletion').mockImplementation(
+      jest.spyOn(OpenAIApi.prototype, 'createChatCompletion').mockImplementation(
         createDelayedResponse({
           data: { choices, object, array, model },
           headers: {},
@@ -98,7 +107,7 @@ describe('monitorOpenAI', () => {
         },
       ];
 
-      await openai.createChatCompletion({
+      await OpenAIApi.prototype.createChatCompletion({
         messages,
         temperature,
         model,
