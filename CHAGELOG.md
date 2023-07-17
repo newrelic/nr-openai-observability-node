@@ -51,3 +51,11 @@
 ### v1.0.11
 
 - Support langchain openAi calls.
+
+### v1.0.12
+
+- Support langchain openAi calls.
+
+### v1.0.13
+
+- Add ingestion source field.

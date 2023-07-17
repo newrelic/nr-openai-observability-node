@@ -156,6 +156,7 @@ describe('monitorOpenAI', () => {
           api_key_last_four_digits: expect.any(String),
           'array.0.key': array[0].key,
           'object.key': object.key,
+          ingestion_source: expect.any(String),
         },
       });
     });
