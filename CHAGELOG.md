@@ -47,3 +47,7 @@
 ### v1.0.10
 
 - Sends `LlmEmbedding` event when calling OpenAI `createEmbedding`.
+
+### v1.0.11
+
+- Support langchain openAi calls.
