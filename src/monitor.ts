@@ -1,5 +1,4 @@
 import { OpenAIApi } from 'openai';
-import { OpenAI } from "langchain/llms/openai";
 
 import { createEventClient, EventClientOptions } from './eventsClient';
 import { OpenAIError } from './eventTypes';
@@ -8,7 +7,6 @@ import {
   CompletionEventDataFactory,
   EmbeddingEventDataFactory,
 } from './eventDataFactory';
-
 
 export interface MonitorOpenAIOptions extends EventClientOptions {
   applicationName: string;
@@ -19,7 +17,11 @@ export const monitorOpenAI = (
   options: MonitorOpenAIOptions,
 ) => {
   const { applicationName } = options;
-  const openAiConfiguration = openAIApi['configuration'] || openAIApi['clientConfig'];
+  const openAiConfiguration =
+    openAIApi['configuration'] || openAIApi['clientConfig'];
+  if (!openAiConfiguration) {
+    throw new Error('OpenAi configuration is missing');
+  }
   const eventClient = createEventClient(options);
   const chatCompletionEventDataFactory = new ChatCompletionEventDataFactory({
     applicationName,
@@ -133,33 +135,32 @@ export const monitorOpenAI = (
       getDuration: () => new Date().valueOf() - startTime.valueOf(),
     };
   };
+  const createCompletion = OpenAIApi.prototype.createCompletion;
+  const createChatCompletion = OpenAIApi.prototype.createChatCompletion;
+  const createEmbedding = OpenAIApi.prototype.createEmbedding;
 
-  const createCompletion = OpenAIApi.prototype.createCompletion
-  const createChatCompletion = OpenAIApi.prototype.createChatCompletion
-  const createEmbedding = OpenAIApi.prototype.createEmbedding
-
-  const createCompletionOverRide = function (args: any) {
+  const createCompletionOverride = function (args: any) {
     return patchCompletion(
       //@ts-ignore
-      createCompletion.bind(this, args)
-    )(args)
-  }
+      createCompletion.bind(this, args),
+    )(args);
+  };
 
-  const createChatCompletionOverRide = function (args: any) {
+  const createChatCompletionOverride = function (args: any) {
     return patchChatCompletion(
       //@ts-ignore
-      createChatCompletion.bind(this, args)
-    )(args)
-  }
+      createChatCompletion.bind(this, args),
+    )(args);
+  };
 
-  const createEmbeddingOverRide = function (args: any) {
+  const createEmbeddingOverride = function (args: any) {
     return patchEmbedding(
       //@ts-ignore
-      createEmbedding.bind(this, args)
-    )(args)
-  }
+      createEmbedding.bind(this, args),
+    )(args);
+  };
 
-  OpenAIApi.prototype.createEmbedding = createEmbeddingOverRide
-  OpenAIApi.prototype.createCompletion = createCompletionOverRide
-  OpenAIApi.prototype.createChatCompletion = createChatCompletionOverRide
+  OpenAIApi.prototype.createEmbedding = createEmbeddingOverride;
+  OpenAIApi.prototype.createCompletion = createCompletionOverride;
+  OpenAIApi.prototype.createChatCompletion = createChatCompletionOverride;
 };

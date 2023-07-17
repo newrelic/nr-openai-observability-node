@@ -5,6 +5,7 @@ import {
   getSentEvent,
   sendEventMock,
 } from './__mocks__/@newrelic/telemetry-sdk';
+import { TestEnvironment } from './testEnvironment';
 
 const model = 'gpt-4';
 const question = 'Are you alive?';
@@ -15,26 +16,18 @@ const temperature = 1;
 
 const createDelayedResponse =
   (result: any): ((...args: any[]) => Promise<any>) =>
-    () =>
-      new Promise((resolve) => setTimeout(() => resolve(result), 1));
+  () =>
+    new Promise((resolve) => setTimeout(() => resolve(result), 1));
 
 describe('monitorOpenAI', () => {
   //@ts-ignore
   let openai: OpenAIApi;
 
   beforeEach(() => {
-
-    //@ts-ignore
-    OpenAIApi.prototype.createCompletion = () => { }
-    //@ts-ignore
-    OpenAIApi.prototype.createChatCompletion = () => { }
-    //@ts-ignore
-    OpenAIApi.prototype.createEmbedding = () => { }
-
     openai = {
-      createCompletion: () => { },
-      createChatCompletion: () => { },
-      createEmbedding: () => { },
+      configuration: {
+        apiKey: 'test',
+      },
     } as unknown as OpenAIApi;
 
     sendEventMock.mockClear();
@@ -88,12 +81,14 @@ describe('monitorOpenAI', () => {
     const array = [{ key: 'arrayKey' }];
 
     beforeEach(async () => {
-      jest.spyOn(OpenAIApi.prototype, 'createChatCompletion').mockImplementation(
-        createDelayedResponse({
-          data: { choices, object, array, model },
-          headers: {},
-        }),
-      );
+      jest
+        .spyOn(OpenAIApi.prototype, 'createChatCompletion')
+        .mockImplementation(
+          createDelayedResponse({
+            data: { choices, object, array, model },
+            headers: {},
+          }),
+        );
 
       monitorOpenAI(openai, {
         newRelicApiKey,
@@ -158,6 +153,7 @@ describe('monitorOpenAI', () => {
           finish_reason: choices[0].finish_reason,
           response_time: expect.any(Number),
           number_of_messages: 2,
+          api_key_last_four_digits: expect.any(String),
           'array.0.key': array[0].key,
           'object.key': object.key,
         },

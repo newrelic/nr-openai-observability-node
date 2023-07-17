@@ -8,7 +8,7 @@
   "author": "air-opensource@newrelic.com",
   "scripts": {
     "start:showcase": "ts-node tests/showcase",
-    "start:langchain": "ts-node tests/langchain_showcase",
+    "start:langchain": "ts-node tests/langchain.showcase",
     "start:showcase:azure": "OPENAI_ENV=AZURE ts-node tests/showcase",
     "lint": "eslint . --fix",
     "build": "tsc",

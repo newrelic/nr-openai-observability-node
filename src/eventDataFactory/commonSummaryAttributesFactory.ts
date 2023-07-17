@@ -39,7 +39,7 @@ export interface CommonSummaryAttributesOptions {
 export class CommonSummaryAttributesFactory {
   constructor(
     private readonly options: CommonSummaryAttributesFactoryOptions,
-  ) { }
+  ) {}
 
   createAttributes({
     id,
