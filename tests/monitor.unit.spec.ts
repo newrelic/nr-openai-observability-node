@@ -5,6 +5,7 @@ import {
   getSentEvent,
   sendEventMock,
 } from './__mocks__/@newrelic/telemetry-sdk';
+import { TestEnvironment } from './testEnvironment';
 
 const model = 'gpt-4';
 const question = 'Are you alive?';
@@ -19,13 +20,14 @@ const createDelayedResponse =
     new Promise((resolve) => setTimeout(() => resolve(result), 1));
 
 describe('monitorOpenAI', () => {
+  //@ts-ignore
   let openai: OpenAIApi;
 
   beforeEach(() => {
     openai = {
-      createCompletion: () => {},
-      createChatCompletion: () => {},
-      createEmbedding: () => {},
+      configuration: {
+        apiKey: 'test',
+      },
     } as unknown as OpenAIApi;
 
     sendEventMock.mockClear();
@@ -39,7 +41,7 @@ describe('monitorOpenAI', () => {
     ];
 
     jest
-      .spyOn(openai, 'createCompletion')
+      .spyOn(OpenAIApi.prototype, 'createCompletion')
       .mockImplementation(createDelayedResponse({ data: { choices } }));
 
     monitorOpenAI(openai, {
@@ -47,7 +49,7 @@ describe('monitorOpenAI', () => {
       applicationName,
     });
 
-    await openai.createCompletion({
+    await OpenAIApi.prototype.createCompletion({
       prompt: question,
       model,
     });
@@ -79,12 +81,14 @@ describe('monitorOpenAI', () => {
     const array = [{ key: 'arrayKey' }];
 
     beforeEach(async () => {
-      jest.spyOn(openai, 'createChatCompletion').mockImplementation(
-        createDelayedResponse({
-          data: { choices, object, array, model },
-          headers: {},
-        }),
-      );
+      jest
+        .spyOn(OpenAIApi.prototype, 'createChatCompletion')
+        .mockImplementation(
+          createDelayedResponse({
+            data: { choices, object, array, model },
+            headers: {},
+          }),
+        );
 
       monitorOpenAI(openai, {
         newRelicApiKey,
@@ -98,7 +102,7 @@ describe('monitorOpenAI', () => {
         },
       ];
 
-      await openai.createChatCompletion({
+      await OpenAIApi.prototype.createChatCompletion({
         messages,
         temperature,
         model,
@@ -149,6 +153,7 @@ describe('monitorOpenAI', () => {
           finish_reason: choices[0].finish_reason,
           response_time: expect.any(Number),
           number_of_messages: 2,
+          api_key_last_four_digits: expect.any(String),
           'array.0.key': array[0].key,
           'object.key': object.key,
         },

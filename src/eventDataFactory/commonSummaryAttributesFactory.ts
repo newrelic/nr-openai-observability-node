@@ -51,7 +51,6 @@ export class CommonSummaryAttributesFactory {
     attributeKeySpecialTreatments,
   }: CommonSummaryAttributesOptions): EventAttributes {
     const { applicationName, openAiConfiguration } = this.options;
-
     const initialAttributes: CommonSummaryAttributes = {
       id,
       response_time,
