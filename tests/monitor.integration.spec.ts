@@ -142,6 +142,7 @@ describe('monitorOpenAI', () => {
           ratelimit_reset_tokens: expect.any(String),
           organization: expect.any(String),
           api_version: '2020-10-01',
+          ingestion_source: expect.any(String),
         },
       });
     });
@@ -183,6 +184,7 @@ describe('monitorOpenAI', () => {
               'Incorrect API key provided: BAD_KEY. You can find your API key at https://platform.openai.com/account/api-keys.',
             error_status: 401,
             error_type: 'invalid_request_error',
+            ingestion_source: expect.any(String),
           },
         });
       }
@@ -220,6 +222,7 @@ describe('monitorOpenAI', () => {
         vendor: 'openAI',
         object: 'list',
         api_version: '2020-10-01',
+        ingestion_source: expect.any(String),
       },
     });
   });

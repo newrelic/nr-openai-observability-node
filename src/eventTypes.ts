@@ -72,6 +72,7 @@ export interface CommonSummaryAttributes {
   error_type?: string;
   error_code?: string;
   error_param?: string;
+  ingestion_source?: string;
 }
 
 export type EventData = { eventType: EventType; attributes: EventAttributes };
