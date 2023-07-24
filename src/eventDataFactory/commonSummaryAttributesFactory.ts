@@ -17,9 +17,6 @@ import {
   EventAttributesBuilder,
 } from './eventAttributesBuilder';
 
-//@ts-ignore imported not from rootDir
-import { version } from '../../package.json';
-
 export interface CommonSummaryAttributesFactoryOptions {
   applicationName: string;
   openAiConfiguration?: Configuration;
@@ -71,7 +68,7 @@ export class CommonSummaryAttributesFactory {
       error_param: responseError?.response?.data?.error?.param,
       organization: responseHeaders?.['openai-organization'],
       api_version: responseHeaders?.['openai-version'],
-      ingestion_source: `Node-${version}`,
+      ingest_source: `Node`,
       api_key_last_four_digits: isString(openAiConfiguration?.apiKey)
         ? `sk-${openAiConfiguration?.apiKey.slice(-4)}`
         : undefined,
