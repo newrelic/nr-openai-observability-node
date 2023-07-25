@@ -68,7 +68,7 @@ export class CommonSummaryAttributesFactory {
       error_param: responseError?.response?.data?.error?.param,
       organization: responseHeaders?.['openai-organization'],
       api_version: responseHeaders?.['openai-version'],
-      ingest_source: `Node`,
+      ingest_source: `Node-sdk`,
       api_key_last_four_digits: isString(openAiConfiguration?.apiKey)
         ? `sk-${openAiConfiguration?.apiKey.slice(-4)}`
         : undefined,
