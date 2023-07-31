@@ -60,7 +60,7 @@ export class ChatCompletionEventDataFactory {
         applicationName: this.applicationName,
         sequence,
         completion_id,
-        content: message.content ?? '',
+        content: this.cutContent(message.content) ?? '',
         role: message.role,
         model: request.model,
         vendor: 'openAI',
@@ -103,6 +103,11 @@ export class ChatCompletionEventDataFactory {
       eventType: 'LlmChatCompletionSummary',
       attributes: removeUndefinedValues(attributes),
     };
+  }
+
+  private cutContent(inputString = ''): string {
+    const maxLength = 4095;
+    return inputString.slice(0, maxLength);
   }
 
   private getMessages(
