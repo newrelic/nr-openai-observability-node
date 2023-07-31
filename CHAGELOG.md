@@ -67,3 +67,7 @@
 ### v1.0.15
 
 - change ingestion source field value.
+
+### v1.0.16
+
+- cut long content.
