@@ -24,7 +24,7 @@ const openAIApi = TestEnvironment.isAzure
     ) as unknown as OpenAIApi)
   : new OpenAIApi(
       new Configuration({
-        apiKey: TestEnvironment.openaiApiKey,
+        apiKey: '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',
       }),
     );
 
