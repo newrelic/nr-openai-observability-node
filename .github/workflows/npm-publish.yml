@@ -33,8 +33,3 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Create and push tag
-        run: |
-          VERSION=`node -e "const { version } = require('./package.json'); console.log(version);"`
-          git tag v$VERSION
-          git push --tags
