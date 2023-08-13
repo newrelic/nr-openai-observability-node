@@ -61,6 +61,7 @@ export class ChatCompletionEventDataFactory {
         sequence,
         completion_id,
         content: this.cutContent(message.content) ?? '',
+        function_call_resposnse: JSON.stringify(message.function_call),
         role: message.role,
         model: request.model,
         vendor: 'openAI',
@@ -107,7 +108,7 @@ export class ChatCompletionEventDataFactory {
 
   private cutContent(inputString = ''): string {
     const maxLength = 4095;
-    return inputString.slice(0, maxLength);
+    return inputString && inputString.slice(0, maxLength);
   }
 
   private getMessages(
