@@ -108,7 +108,7 @@ export class ChatCompletionEventDataFactory {
 
   private cutContent(inputString = ''): string {
     const maxLength = 4095;
-    return inputString && inputString.slice(0, maxLength);
+    return inputString?.slice(0, maxLength);
   }
 
   private getMessages(
