@@ -54,11 +54,15 @@ export const createEventClient = (
       eventBatch.addEvent(event);
     });
 
-    eventClient.send(eventBatch, (error, { statusCode, statusMessage }) => {
+    eventClient.send(eventBatch, (error, response) => {
       if (error) {
         console.error(error);
-      } else if (statusCode !== 200) {
-        console.error(`Error sending event: ${statusCode} ${statusMessage}`);
+      } else if (response) {
+        const { statusCode, statusMessage } = response;
+
+        if (statusCode !== 200) {
+          console.error(`Error sending event: ${statusCode} ${statusMessage}`);
+        }
       }
     });
   };
